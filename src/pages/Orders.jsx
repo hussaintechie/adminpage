@@ -10,7 +10,7 @@ import {
   Filter, FileSpreadsheet, ChevronLeft, Printer, Calendar, Clock, Phone, Mail, MapPin, 
   ChevronRight, Package, User, X, Check, ChevronDown, FileText, Truck, Image as ImageIcon, CreditCard, RefreshCcw
 } from 'lucide-react'
-import { INITIAL_ORDERS, MOCK_ORDER_DETAILS } from '../data/orderDetails'
+
 
 
 const formatDeliverySlot = (startStr, endStr) => {
@@ -48,6 +48,9 @@ const formatDeliverySlot = (startStr, endStr) => {
 
 
 export default function Orders() {
+    const [orderDetails, setOrderDetails] = useState(null);
+    const [detailsLoading, setDetailsLoading] = useState(false);
+
   const [selectedOrderId, setSelectedOrderId] = useState(null)
   const [orders, setOrders] = useState([]);
     const [totalOrders, setTotalOrders] = useState(0);
@@ -136,7 +139,7 @@ export default function Orders() {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
 
-  const STATUS_OPTIONS = ['All', 'Pending', 'Processing', 'Dispatched', 'Delivered', 'Cancelled']
+  const STATUS_OPTIONS = ['All', 'Pending', 'delivered']
   const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const YEARS = ['2023', '2024', '2025']
   useEffect(()=>{
@@ -155,7 +158,7 @@ export default function Orders() {
                     orderNo:o.order_no,
                     amount:`₹${o.total_amount}`,
                     status:o.order_status,
-                     date: o.date,
+                    phone:o.phone,
                      customer:o.name,
                     deliveryStart: o.delivery_start,
                     deliveryEnd: o.delivery_end,
@@ -173,9 +176,80 @@ export default function Orders() {
     setLoading(false);
   }
   }
+const handleViewOrder = async (orderId) => {
+  try {
+    setDetailsLoading(true);
+
+    const res = await getSingleOrderAPI(orderId);
+
+    if (res.data.status !== 1) {
+      throw new Error("Order not found");
+    }
+
+    const apiData = res.data.data;
+
+    setOrderDetails({
+      id: `#ORD-${orderId}`,
+      status: "Pending",
+      date: apiData.paydetails.pay_date,
+      time: "",
+      summary: {
+        total: apiData.billdetails.total_amount,
+      },
+      customer: {
+        name: apiData.customer.name,
+        phone: apiData.customer.phone,
+        address: apiData.address,
+      },
+      items: apiData.itmdetails.map((itm, idx) => ({
+        id: idx + 1,
+        name: itm.itmname,
+        price: itm.itmamt,
+        qty: itm.qty,
+        total: itm.itmamt * itm.qty,
+      })),
+    });
+
+    // ✅ SWITCH VIEW ONLY AFTER DATA EXISTS
+    setSelectedOrderId(orderId);
+
+  } catch (err) {
+    console.error("Single order fetch failed", err);
+    alert("Unable to load order details");
+    console.log("FULL API RESPONSE:", res.data);
+
+  } finally {
+    setDetailsLoading(false);
+  }
+};
+
+
   if (selectedOrderId) {
-      const orderDetails = MOCK_ORDER_DETAILS[selectedOrderId] || MOCK_ORDER_DETAILS['#ORD-7782']
-      if (!orderDetails) return <div className="p-10 text-center text-slate-500">Details not found</div>
+ if (detailsLoading) {
+  return (
+    <div className="p-10 text-center text-slate-500">
+      Loading order details...
+    </div>
+  );
+}
+
+if (!orderDetails) {
+  return (
+    <div className="p-10 text-center text-red-500">
+      Failed to load order details
+      <br />
+      <button
+        className="mt-4 underline"
+        onClick={() => setSelectedOrderId(null)}
+      >
+        Go Back
+      </button>
+    </div>
+  );
+}
+
+
+     
   
       return (
         <div className="max-w-6xl mx-auto pb-24 md:pb-10 min-h-screen px-4 md:px-8 py-6 animate-in slide-in-from-right duration-300">
@@ -236,13 +310,13 @@ export default function Orders() {
                     <div className="flex items-center gap-3">
                         <div className="bg-blue-50 p-2.5 rounded-full text-blue-600 border border-blue-100"><User size={20} /></div>
                         <div>
-                            <p className="font-bold text-sm text-slate-800">Rahul Sharma</p>
-                            <p className="text-xs text-slate-500">Regular • 12 Orders</p>
+                            <p className="font-bold text-sm text-slate-800">{orderDetails.customer.name}</p>
+                            <div className="flex gap-3 text-slate-600"> {orderDetails.customer.phone}</div>
                         </div>
                     </div>
                   </div>
                   <div className="space-y-4 text-sm">
-                      <div className="flex gap-3 text-slate-600"><Phone size={16} className="text-slate-400"/> {orderDetails.customer.phone}</div>
+                      
                       <div className="flex gap-3 text-slate-600"><MapPin size={16} className="text-slate-400"/> {orderDetails.customer.address}</div>
                       <div className="flex gap-3 text-slate-600 items-center pt-2 border-t border-slate-50 mt-2">
                           <CreditCard size={16} className="text-slate-400"/> 
@@ -257,89 +331,7 @@ export default function Orders() {
       )
     }
   // --- DETAIL VIEW ---
-  if (selectedOrderId) {
-    const orderDetails = MOCK_ORDER_DETAILS[selectedOrderId] || MOCK_ORDER_DETAILS['#ORD-7782']
-    if (!orderDetails) return <div className="p-10 text-center text-slate-500">Details not found</div>
-
-    return (
-      <div className="max-w-6xl mx-auto pb-24 md:pb-10 min-h-screen px-4 md:px-8 py-6 animate-in slide-in-from-right duration-300">
-        <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 -mx-4 px-4 py-3 flex items-center justify-between md:hidden shadow-sm">
-          <button onClick={() => setSelectedOrderId(null)} className="flex items-center gap-1 text-slate-700 font-semibold active:text-slate-900">
-              <ChevronLeft size={20} /> Back
-          </button>
-          <div className="scale-90 origin-right"><StatusBadge status={orderDetails.status} /></div>
-        </div>
-        
-        {/* Desktop Header */}
-        <div className="hidden md:flex items-center justify-between mb-6">
-          <button onClick={() => setSelectedOrderId(null)} className="flex items-center text-slate-500 hover:text-slate-800 font-medium transition-colors">
-            <ChevronLeft size={20} className="mr-1" /> Back to Orders
-          </button>
-                  </div>
-
-        {/* Detail Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4 md:mt-0">
-            <div className="lg:col-span-2 space-y-6">
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <h2 className="font-bold text-xl text-slate-800 mb-1">{orderDetails.id}</h2>
-                            <p className="text-sm text-slate-500 flex items-center gap-2"><Calendar size={14} /> {orderDetails.date} • {orderDetails.time}</p>
-                        </div>
-                        <div className="text-right">
-                             <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Total</p>
-                             <p className="text-2xl font-bold text-emerald-600">₹{orderDetails.summary.total}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 font-semibold text-slate-700 flex items-center gap-2">
-                      <Package size={18} className="text-slate-400"/> Order Items
-                    </div>
-                    <div className="divide-y divide-slate-100">
-                        {orderDetails.items.map((item) => (
-                        <div key={item.id} className="p-4 flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center text-slate-300">
-                                   <ImageIcon size={20}/>
-                                </div>
-                                <div>
-                                    <p className="font-medium text-slate-800 text-sm">{item.name}</p>
-                                    <p className="text-xs text-slate-500 mt-1 font-medium bg-slate-100 inline-block px-2 py-0.5 rounded">₹{item.price} x {item.qty}</p>
-                                </div>
-                            </div>
-                            <p className="font-bold text-slate-800 text-sm">₹{item.total}</p>
-                        </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-5 h-fit">
-                <div>
-                  <h3 className="font-bold text-slate-800 border-b border-slate-100 pb-3 mb-3">Customer</h3>
-                  <div className="flex items-center gap-3">
-                      <div className="bg-blue-50 p-2.5 rounded-full text-blue-600 border border-blue-100"><User size={20} /></div>
-                      <div>
-                          <p className="font-bold text-sm text-slate-800">Rahul Sharma</p>
-                          <p className="text-xs text-slate-500">Regular • 12 Orders</p>
-                      </div>
-                  </div>
-                </div>
-                <div className="space-y-4 text-sm">
-                    <div className="flex gap-3 text-slate-600"><Phone size={16} className="text-slate-400"/> {orderDetails.customer.phone}</div>
-                    <div className="flex gap-3 text-slate-600"><MapPin size={16} className="text-slate-400"/> {orderDetails.customer.address}</div>
-                    <div className="flex gap-3 text-slate-600 items-center pt-2 border-t border-slate-50 mt-2">
-                        <CreditCard size={16} className="text-slate-400"/> 
-                        <span className="font-medium">
-                            {orderDetails.id === '#ORD-7782' ? 'Online (UPI)' : 'Cash on Delivery'}
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-      </div>
-    )
-  }
+  
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-24 p-4 md:p-6 animate-in fade-in duration-300 relative">
@@ -423,7 +415,7 @@ export default function Orders() {
       {/* --- CREATIVE MOBILE CARDS --- */}
       <div className="md:hidden space-y-4">
         {currentItems.map((order) => (
-          <div key={order.id} onClick={() => setSelectedOrderId(order.id)} className="group relative bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden active:scale-[0.98] transition-all duration-200">
+          <div key={order.id} onClick={() => handleViewOrder(order.id)} className="group relative bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden active:scale-[0.98] transition-all duration-200">
             <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${getStatusColor(order.status)}`}></div>
             <div className="p-4 pl-5">
                 <div className="flex justify-between items-center mb-3">
@@ -466,7 +458,7 @@ export default function Orders() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {currentItems.map((order) => (
-                <tr key={order.id} className="hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => setSelectedOrderId(order.id)}>
+                <tr key={order.id} className="hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => handleViewOrder(order.id)}>
                   <td className="px-6 py-4"><div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 border border-slate-200"><ImageIcon size={20} /></div></td>
                   <td className="px-6 py-4 font-bold text-slate-700">{order.orderNo}</td>
                   <td className="px-6 py-4 font-medium text-slate-600">{order.customer}</td>

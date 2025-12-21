@@ -1,0 +1,465 @@
+import React, { useState, useEffect } from 'react'
+import StatusBadge from '../components/StatusBadge'
+import { INITIAL_ORDERS, MOCK_ORDER_DETAILS } from '../data/orderDetails'
+import { 
+  Filter, FileSpreadsheet, ChevronLeft, Printer, Calendar, Clock, Phone, Mail, MapPin, 
+  ChevronRight, Package, User, X, Check, ChevronDown, FileText, Truck, Image as ImageIcon, CreditCard, RefreshCcw
+} from 'lucide-react'
+
+export default function Sample() {
+  const [selectedOrderId, setSelectedOrderId] = useState(null)
+  
+  // --- FILTER STATES ---
+  const [statusFilter, setStatusFilter] = useState('All')
+  const [dateFilter, setDateFilter] = useState('')
+  const [monthFilter, setMonthFilter] = useState('')
+  const [yearFilter, setYearFilter] = useState('')
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
+
+  // --- PAGINATION STATES ---
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10 // Change this number to show more/less per page
+
+  // --- HELPER: Get Color based on Status ---
+  const getStatusColor = (status) => {
+    switch(status) {
+      case 'Pending': return 'bg-amber-500';
+      case 'Processing': return 'bg-blue-500';
+      case 'Delivered': return 'bg-emerald-500';
+      case 'Cancelled': return 'bg-red-500';
+      default: return 'bg-slate-400';
+    }
+  }
+
+  // --- ACTIONS HANDLERS ---
+  const handlePrintInvoice = (e, orderId) => {
+    e.stopPropagation();
+    alert(`Generating Invoice for ${orderId}...`)
+  }
+
+  const handleOutForDelivery = (e, orderId) => {
+    e.stopPropagation();
+    alert(`Marking ${orderId} as Out for Delivery`)
+  }
+
+  // --- RESET FILTERS ---
+  const clearFilters = () => {
+      setStatusFilter('All');
+      setDateFilter('');
+      setMonthFilter('');
+      setYearFilter('');
+      setIsFilterOpen(false);
+      setCurrentPage(1);
+  }
+
+  // --- FILTER LOGIC ---
+  const filteredOrders = INITIAL_ORDERS.filter(order => {
+    if (statusFilter !== 'All' && order.status !== statusFilter) return false;
+
+    // Parse Date (Mock logic, assumes YYYY-MM-DD or parseable string)
+    const orderDate = new Date(order.date || '2023-12-12'); 
+
+    if (dateFilter) {
+        const selectedDate = new Date(dateFilter);
+        if (orderDate.toDateString() !== selectedDate.toDateString()) return false;
+    }
+    if (monthFilter !== '') {
+        if (orderDate.getMonth() !== parseInt(monthFilter)) return false;
+    }
+    if (yearFilter !== '') {
+        if (orderDate.getFullYear() !== parseInt(yearFilter)) return false;
+    }
+    return true;
+  })
+
+  // --- PAGINATION LOGIC ---
+  // 1. Calculate indexes
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  
+  // 2. Slice data for current page
+  const currentItems = filteredOrders.slice(indexOfFirstItem, indexOfLastItem);
+  
+  // 3. Calculate total pages
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+
+  // 4. Reset to page 1 if filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, dateFilter, monthFilter, yearFilter]);
+
+  // 5. Change page handler
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+
+  const STATUS_OPTIONS = ['All', 'Pending', 'Processing', 'Dispatched', 'Delivered', 'Cancelled']
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  const YEARS = ['2023', '2024', '2025']
+
+  // --- DETAIL VIEW ---
+  if (selectedOrderId) {
+    const orderDetails = MOCK_ORDER_DETAILS[selectedOrderId] || MOCK_ORDER_DETAILS['#ORD-7782']
+    if (!orderDetails) return <div className="p-10 text-center text-slate-500">Details not found</div>
+
+    return (
+      <div className="max-w-6xl mx-auto pb-24 md:pb-10 min-h-screen px-4 md:px-8 py-6 animate-in slide-in-from-right duration-300">
+        <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 -mx-4 px-4 py-3 flex items-center justify-between md:hidden shadow-sm">
+          <button onClick={() => setSelectedOrderId(null)} className="flex items-center gap-1 text-slate-700 font-semibold active:text-slate-900">
+              <ChevronLeft size={20} /> Back
+          </button>
+          <div className="scale-90 origin-right"><StatusBadge status={orderDetails.status} /></div>
+        </div>
+        
+        {/* Desktop Header */}
+        <div className="hidden md:flex items-center justify-between mb-6">
+          <button onClick={() => setSelectedOrderId(null)} className="flex items-center text-slate-500 hover:text-slate-800 font-medium transition-colors">
+            <ChevronLeft size={20} className="mr-1" /> Back to Orders
+          </button>
+                  </div>
+
+        {/* Detail Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4 md:mt-0">
+            <div className="lg:col-span-2 space-y-6">
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h2 className="font-bold text-xl text-slate-800 mb-1">{orderDetails.id}</h2>
+                            <p className="text-sm text-slate-500 flex items-center gap-2"><Calendar size={14} /> {orderDetails.date} • {orderDetails.time}</p>
+                        </div>
+                        <div className="text-right">
+                             <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Total</p>
+                             <p className="text-2xl font-bold text-emerald-600">₹{orderDetails.summary.total}</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 font-semibold text-slate-700 flex items-center gap-2">
+                      <Package size={18} className="text-slate-400"/> Order Items
+                    </div>
+                    <div className="divide-y divide-slate-100">
+                        {orderDetails.items.map((item) => (
+                        <div key={item.id} className="p-4 flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center text-slate-300">
+                                   <ImageIcon size={20}/>
+                                </div>
+                                <div>
+                                    <p className="font-medium text-slate-800 text-sm">{item.name}</p>
+                                    <p className="text-xs text-slate-500 mt-1 font-medium bg-slate-100 inline-block px-2 py-0.5 rounded">₹{item.price} x {item.qty}</p>
+                                </div>
+                            </div>
+                            <p className="font-bold text-slate-800 text-sm">₹{item.total}</p>
+                        </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+            <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-5 h-fit">
+                <div>
+                  <h3 className="font-bold text-slate-800 border-b border-slate-100 pb-3 mb-3">Customer</h3>
+                  <div className="flex items-center gap-3">
+                      <div className="bg-blue-50 p-2.5 rounded-full text-blue-600 border border-blue-100"><User size={20} /></div>
+                      <div>
+                          <p className="font-bold text-sm text-slate-800">Rahul Sharma</p>
+                          <p className="text-xs text-slate-500">Regular • 12 Orders</p>
+                      </div>
+                  </div>
+                </div>
+                <div className="space-y-4 text-sm">
+                    <div className="flex gap-3 text-slate-600"><Phone size={16} className="text-slate-400"/> {orderDetails.customer.phone}</div>
+                    <div className="flex gap-3 text-slate-600"><MapPin size={16} className="text-slate-400"/> {orderDetails.customer.address}</div>
+                    <div className="flex gap-3 text-slate-600 items-center pt-2 border-t border-slate-50 mt-2">
+                        <CreditCard size={16} className="text-slate-400"/> 
+                        <span className="font-medium">
+                            {orderDetails.id === '#ORD-7782' ? 'Online (UPI)' : 'Cash on Delivery'}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto space-y-6 pb-24 p-4 md:p-6 animate-in fade-in duration-300 relative">
+      
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+         <div className="flex justify-between items-end">
+            <div>
+                <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Orders</h1>
+                <p className="text-slate-500 text-sm mt-1">
+                   {(statusFilter !== 'All' || dateFilter || monthFilter || yearFilter) 
+                     ? `Found ${filteredOrders.length} results` 
+                     : `All Orders (${filteredOrders.length})`}
+                </p>
+            </div>
+            
+            <button onClick={() => setIsFilterOpen(true)} className="md:hidden flex items-center justify-center w-10 h-10 bg-slate-800 text-white rounded-xl shadow-lg active:scale-90 transition-transform">
+                <Filter size={18} />
+            </button>
+         </div>
+
+         <div className="hidden md:flex gap-3 relative">
+            <div className="relative">
+                <button 
+                    onClick={() => setIsFilterOpen(!isFilterOpen)}
+                    className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium shadow-sm transition-all ${
+                        isFilterOpen || statusFilter !== 'All' || dateFilter || monthFilter || yearFilter
+                        ? 'bg-slate-800 text-white border-slate-800 ring-2 ring-slate-100' 
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                >
+                    <Filter size={16} /> <span>Filters</span> <ChevronDown size={14} />
+                </button>
+                
+                {isFilterOpen && (
+                    <div className="absolute top-12 right-0 w-72 bg-white rounded-xl shadow-xl border border-slate-100 z-50 animate-in fade-in zoom-in-95 duration-200 p-4">
+                        <div className="space-y-4">
+                            <div>
+                                <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Status</h4>
+                                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full border border-gray-200 rounded-lg p-2 text-sm text-slate-700 outline-none focus:border-emerald-500 bg-slate-50">
+                                    {STATUS_OPTIONS.map(status => <option key={status} value={status}>{status}</option>)}
+                                </select>
+                            </div>
+                            <div className="h-px bg-slate-100"></div>
+                            <div>
+                                <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Time Period</h4>
+                                <div className="space-y-2">
+                                    <div>
+                                        <label className="text-[10px] text-slate-500 font-medium block mb-1">Specific Date</label>
+                                        <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="w-full border border-gray-200 rounded-lg p-2 text-sm text-slate-700 outline-none focus:border-emerald-500"/>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label className="text-[10px] text-slate-500 font-medium block mb-1">Month</label>
+                                            <select value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} className="w-full border border-gray-200 rounded-lg p-2 text-sm text-slate-700 outline-none focus:border-emerald-500 bg-white">
+                                                <option value="">Any</option>
+                                                {MONTHS.map((m, i) => <option key={m} value={i}>{m}</option>)}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] text-slate-500 font-medium block mb-1">Year</label>
+                                            <select value={yearFilter} onChange={(e) => setYearFilter(e.target.value)} className="w-full border border-gray-200 rounded-lg p-2 text-sm text-slate-700 outline-none focus:border-emerald-500 bg-white">
+                                                <option value="">Any</option>
+                                                {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="pt-2">
+                                <button onClick={clearFilters} className="w-full flex items-center justify-center gap-2 text-sm text-red-500 hover:bg-red-50 py-2 rounded-lg transition-colors"><RefreshCcw size={14}/> Reset Filters</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+           
+         </div>
+      </div>
+
+      {/* --- CREATIVE MOBILE CARDS --- */}
+      <div className="md:hidden space-y-4">
+        {currentItems.map((order) => (
+          <div key={order.id} onClick={() => setSelectedOrderId(order.id)} className="group relative bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden active:scale-[0.98] transition-all duration-200">
+            <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${getStatusColor(order.status)}`}></div>
+            <div className="p-4 pl-5">
+                <div className="flex justify-between items-center mb-3">
+                    <span className="font-bold text-slate-800 text-lg">{order.id}</span>
+                    <span className="font-bold text-emerald-600 text-lg">{order.amount}</span>
+                </div>
+                <div className="flex items-start gap-3 mb-3">
+                    <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 shrink-0 border border-slate-200"><ImageIcon size={20} /></div>
+                    <div>
+                        <p className="font-semibold text-slate-700 text-sm">{order.customer}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{order.items} Items • <span className="font-medium text-slate-400">{order.status}</span></p>
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                    <button onClick={(e) => handlePrintInvoice(e, order.id)} className="flex items-center justify-center gap-2 py-2 bg-slate-50 text-slate-600 text-xs font-bold rounded-lg border border-slate-100 hover:bg-slate-100"><FileText size={14} /> Invoice</button>
+                    <button onClick={(e) => handleOutForDelivery(e, order.id)} className="flex items-center justify-center gap-2 py-2 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg border border-blue-100 hover:bg-blue-100"><Truck size={14} /> Delivery</button>
+                </div>
+                <div className="flex justify-between items-center pt-3 border-t border-slate-50 border-dashed">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium"><Clock size={12} /> Dec 03, 09:41 AM</div>
+                    <div className="flex items-center gap-1 text-xs font-bold text-blue-600">View Details <ChevronRight size={12} /></div>
+                </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* --- DESKTOP TABLE --- */}
+      <div className="hidden md:block bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <table className="w-full text-left">
+            <thead className="bg-slate-50/80 text-slate-500 text-xs uppercase font-semibold border-b border-slate-100">
+              <tr>
+                <th className="px-6 py-4">Image</th>
+                <th className="px-6 py-4">Order ID</th>
+                <th className="px-6 py-4">Customer</th>
+                <th className="px-6 py-4">slate</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Items</th>
+                <th className="px-6 py-4">Amount</th>
+                <th className="px-6 py-4 text-center">Quick Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {currentItems.map((order) => (
+                <tr key={order.id} className="hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => setSelectedOrderId(order.id)}>
+                  <td className="px-6 py-4"><div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 border border-slate-200"><ImageIcon size={20} /></div></td>
+                  <td className="px-6 py-4 font-bold text-slate-700">{order.id}</td>
+                  <td className="px-6 py-4 font-medium text-slate-600">{order.customer}</td>
+                  <td className="px-6 py-4">
+                     <div className="font-bold text-slate-700 text-sm">Dec 12</div>
+                     <div className="text-xs text-slate-400 font-mono">10:42 AM</div>
+                  </td>
+                  <td className="px-6 py-4"><StatusBadge status={order.status} /></td>
+                  <td className="px-6 py-4 text-slate-500">{order.items} Items</td>
+                  <td className="px-6 py-4 font-bold text-slate-700">{order.amount}</td>
+                  <td className="px-6 py-4">
+                     <div className="flex items-center justify-center gap-2">
+                        <button onClick={(e) => handlePrintInvoice(e, order.id)} className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Print Invoice"><FileText size={18} /></button>
+                        <button onClick={(e) => handleOutForDelivery(e, order.id)} className="p-2 text-slate-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Mark Out for Delivery"><Truck size={18} /></button>
+                        <span className="text-slate-300 mx-1">|</span>
+                        <ChevronRight size={18} className="text-slate-400"/>
+                     </div>
+                  </td>
+                </tr>
+
+
+              ))}
+            </tbody>
+        </table>
+        {currentItems.length === 0 && (
+             <div className="p-12 text-center">
+                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-300"><Filter size={24} /></div>
+                <p className="text-slate-500 font-medium">No orders found</p>
+                <p className="text-sm text-slate-400 mt-1">Try resetting the filters or adjusting your date range.</p>
+                <button onClick={clearFilters} className="mt-4 text-emerald-600 font-bold text-sm hover:underline">Reset All Filters</button>
+            </div>
+        )}
+      </div>
+
+      {/* --- PAGINATION CONTROLS --- */}
+      {filteredOrders.length > itemsPerPage && (
+        <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4 rounded-xl shadow-sm">
+            <div className="flex flex-1 justify-between sm:hidden">
+                <button 
+                    onClick={() => paginate(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                >
+                    Previous
+                </button>
+                <span className="text-sm text-gray-600 self-center">Page {currentPage} of {totalPages}</span>
+                <button 
+                    onClick={() => paginate(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                >
+                    Next
+                </button>
+            </div>
+            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                <div>
+                    <p className="text-sm text-gray-700">
+                        Showing <span className="font-bold">{indexOfFirstItem + 1}</span> to <span className="font-bold">{Math.min(indexOfLastItem, filteredOrders.length)}</span> of <span className="font-bold">{filteredOrders.length}</span> results
+                    </p>
+                </div>
+                <div>
+                    <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                        <button
+                            onClick={() => paginate(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+                        >
+                            <span className="sr-only">Previous</span>
+                            <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                        </button>
+                        
+                        {/* Page Numbers */}
+                        {Array.from({ length: totalPages }).map((_, idx) => (
+                            <button
+                                key={idx + 1}
+                                onClick={() => paginate(idx + 1)}
+                                className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 ${
+                                    currentPage === idx + 1 
+                                    ? 'bg-slate-800 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600' 
+                                    : 'text-gray-900 hover:bg-gray-50'
+                                }`}
+                            >
+                                {idx + 1}
+                            </button>
+                        ))}
+
+                        <button
+                            onClick={() => paginate(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+                        >
+                            <span className="sr-only">Next</span>
+                            <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                        </button>
+                    </nav>
+                </div>
+            </div>
+        </div>
+      )}
+
+      {/* --- MOBILE FILTER SHEET --- */}
+      {isFilterOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex items-end justify-center">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onClick={() => setIsFilterOpen(false)} />
+            <div className="relative bg-white w-full rounded-t-3xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-y-auto">
+                <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-bold text-slate-800">Filter Orders</h3>
+                    <button onClick={() => setIsFilterOpen(false)} className="p-2 bg-slate-50 rounded-full text-slate-500"><X size={20}/></button>
+                </div>
+                <div className="space-y-6">
+                    <div className="space-y-2">
+                        <label className="text-sm font-bold text-slate-700">Status</label>
+                        <div className="grid grid-cols-2 gap-2">
+                            {STATUS_OPTIONS.map(status => (
+                                <button key={status} onClick={() => setStatusFilter(status)} className={`p-3 rounded-xl text-sm font-medium transition-all ${statusFilter === status ? 'bg-slate-800 text-white shadow-md' : 'bg-slate-50 text-slate-600'}`}>
+                                    {status}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="space-y-4 pt-4 border-t border-slate-100">
+                        <label className="text-sm font-bold text-slate-700">Time Period</label>
+                        <div>
+                            <label className="text-xs text-slate-500 mb-1 block">Specific Date</label>
+                            <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500"/>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="text-xs text-slate-500 mb-1 block">Month</label>
+                                <select value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500">
+                                    <option value="">Any</option>
+                                    {MONTHS.map((m, i) => <option key={m} value={i}>{m}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-xs text-slate-500 mb-1 block">Year</label>
+                                <select value={yearFilter} onChange={(e) => setYearFilter(e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500">
+                                    <option value="">Any</option>
+                                    {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                        <button onClick={clearFilters} className="flex-1 py-3 text-red-500 font-bold bg-red-50 rounded-xl">Reset</button>
+                        <button onClick={() => setIsFilterOpen(false)} className="flex-[2] py-3 text-white font-bold bg-emerald-600 rounded-xl shadow-lg shadow-emerald-200">Apply Filters</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+      )}
+    </div>
+  )
+}

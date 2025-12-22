@@ -17,7 +17,7 @@ export const getSingleOrderAPI = (orderId) => {
 
 // Mark out for delivery
 export const markOutForDeliveryAPI = (orderId) => {
-  return API.post("product/markOutForDelivery", {
+  return API.post("tuser/markOutForDelivery", {
     order_id: orderId
   });
 };
@@ -35,4 +35,12 @@ export const trackOrderAPI = (orderId) => {
   return API.post("product/trackOrder", {
     order_id: orderId
   });
+};
+export const printInvoiceAPI = (orderId) => {
+  return API.get(
+    `invoice/orders/${orderId}/invoice`,
+    {
+      responseType: "blob", // 👈 VERY IMPORTANT for PDF
+    }
+  );
 };

@@ -1,16 +1,33 @@
-import React, { useState } from 'react'
+import React, { useState,useEffect } from 'react'
 import { Save, TicketPercent, Image as ImageIcon, UploadCloud, Plus, Trash2, Layers, Link as LinkIcon } from 'lucide-react'
+import {createCouponAPI, getCouponsAPI, deleteCouponAPI} from '../api/couponAPI'
 
 export default function Settings() {
   
-  // --- 1. COUPON STATE ---
-  const [couponForm, setCouponForm] = useState({ code: '', discount: '', expiry: '' })
-  const [couponsList, setCouponsList] = useState([
-    { id: 1, code: 'WELCOME50', discount: '50%', expiry: '2025-12-30' },
-    { id: 2, code: 'GROCERY10', discount: '10%', expiry: '2025-10-15' }
-  ])
+  const [couponForm, setCouponForm] = useState({
+  code: '',
+  discount_type: 'PERCENT', // 🔥 default
+  discount: '',
+  expiry: ''
+});
 
-  // --- 2. BANNER STATE ---
+ const [couponsList, setCouponsList] = useState([]);
+
+ useEffect(() => {
+  loadCoupons();
+}, []);
+
+const loadCoupons = async () => {
+  try {
+    const res = await getCouponsAPI();
+
+    if (res.data.status === 1) {
+      setCouponsList(res.data.data);
+    }
+  } catch (err) {
+    console.error("Failed to load coupons", err);
+  }
+}; // --- 2. BANNER STATE ---
   const [bannerForm, setBannerForm] = useState({ slot: 'Banner Slot 1', title: '', link: '' })
   const [bannersList, setBannersList] = useState([
     { id: 1, slot: 'Banner Slot 1', title: 'Monsoon Sale', link: '/sale' },
@@ -21,12 +38,63 @@ export default function Settings() {
   const handleCouponInput = (e) => setCouponForm({...couponForm, [e.target.name]: e.target.value})
   const handleBannerInput = (e) => setBannerForm({...bannerForm, [e.target.name]: e.target.value})
 
-  const addCoupon = () => {
-    if(!couponForm.code || !couponForm.discount) return alert("Fill coupon details")
-    setCouponsList([...couponsList, { ...couponForm, id: Date.now() }])
-    setCouponForm({ code: '', discount: '', expiry: '' })
+ const addCoupon = async () => {
+  if (!couponForm.code || !couponForm.discount) {
+    return alert("Fill coupon details");
   }
-  const removeCoupon = (id) => setCouponsList(couponsList.filter(item => item.id !== id))
+if (
+  couponForm.discount_type === "PERCENT" &&
+  couponForm.discount > 100
+) {
+  return alert("Percentage discount cannot exceed 100%");
+}
+
+  try {
+    const payload = {
+      coupon_code: couponForm.code.toUpperCase(),
+      discount_type: couponForm.discount_type,
+      discount_value: Number(couponForm.discount),
+      expiry_date: couponForm.expiry || null
+    };
+
+    const res = await createCouponAPI(payload);
+
+    if (res.data.status === 1) {
+      await loadCoupons();
+      setCouponForm({
+        code: '',
+        discount_type: 'PERCENT',
+        discount: '',
+        expiry: ''
+      });
+      alert("Coupon created successfully");
+    } else {
+      alert(res.data.message);
+    }
+
+  } catch (err) {
+    alert(err.response?.data?.message || "Failed to create coupon");
+  }
+};
+
+const removeCoupon = async (coupon_id) => {
+  if (!window.confirm("Delete this coupon?")) return;
+
+  try {
+    const res = await deleteCouponAPI(coupon_id);
+
+    if (res.data.status === 1) {
+      await loadCoupons(); // 🔥 refresh list
+      alert("Coupon deleted");
+    } else {
+      alert(res.data.message);
+    }
+
+  } catch (err) {
+    alert("Failed to delete coupon");
+  }
+};
+
 
   const addBanner = () => {
     if(!bannerForm.title) return alert("Add a title for reference")
@@ -49,12 +117,7 @@ export default function Settings() {
           <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Marketing Assets</h1>
           <p className="text-slate-500 text-sm mt-1">Manage Coupons and App Banners.</p>
         </div>
-        <button 
-          onClick={handleSaveAll}
-          className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl flex items-center justify-center gap-2 font-bold shadow-sm shadow-emerald-200 active:scale-95 transition-all"
-        >
-          <Save size={18} /> Save Changes
-        </button>
+        
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -77,35 +140,87 @@ export default function Settings() {
               placeholder="Code (e.g. SAVE20)"
               className="w-full border border-gray-300 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-green-100 focus:border-green-500 font-bold text-gray-700 uppercase text-sm"
             />
-            <div className="grid grid-cols-2 gap-3">
-                <input 
-                    type="text" name="discount" value={couponForm.discount} onChange={handleCouponInput}
-                    placeholder="Discount %"
-                    className="w-full border border-gray-300 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-green-100 focus:border-green-500 text-sm"
-                />
-                <input 
-                    type="date" name="expiry" value={couponForm.expiry} onChange={handleCouponInput}
-                    className="w-full border border-gray-300 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-green-100 focus:border-green-500 text-xs text-gray-600"
-                />
-            </div>
+          <div className="grid grid-cols-2 gap-3">
+  {/* DISCOUNT TYPE */}
+  <select
+    name="discount_type"
+    value={couponForm.discount_type}
+    onChange={handleCouponInput}
+    className="w-full border border-gray-300 rounded-xl p-2.5
+               outline-none focus:ring-2 focus:ring-green-100
+               focus:border-green-500 text-sm bg-white"
+  >
+    <option value="PERCENT">Percentage (%)</option>
+    <option value="FLAT">Flat Amount (₹)</option>
+  </select>
+
+  {/* DISCOUNT VALUE */}
+  <input 
+    type="number"
+    name="discount"
+    value={couponForm.discount}
+    onChange={handleCouponInput}
+    placeholder={
+      couponForm.discount_type === "PERCENT"
+        ? "Discount %"
+        : "Flat ₹"
+    }
+    className="w-full border border-gray-300 rounded-xl p-2.5
+               outline-none focus:ring-2 focus:ring-green-100
+               focus:border-green-500 text-sm"
+  />
+</div>
+
+<input 
+  type="date"
+  name="expiry"
+  value={couponForm.expiry}
+  onChange={handleCouponInput}
+  className="w-full border border-gray-300 rounded-xl p-2.5
+             outline-none focus:ring-2 focus:ring-green-100
+             focus:border-green-500 text-xs text-gray-600"
+/>
+
             <button onClick={addCoupon} className="w-full py-2 bg-green-50 text-green-700 font-semibold rounded-lg hover:bg-green-100 transition-colors text-sm flex items-center justify-center gap-2">
                 <Plus size={16}/> Add Coupon
             </button>
           </div>
 
           <div className="border-t border-dashed border-gray-200 my-2"></div>
+<div className="flex-grow overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+  {couponsList.map(c => (
+  <div
+    key={c.coupon_id}
+    className="flex items-center justify-between bg-green-50/50
+               p-3 rounded-lg border border-green-100"
+  >
+    <div>
+      <p className="font-bold text-green-800 text-sm">
+        {c.coupon_code}
+      </p>
 
-          <div className="flex-grow overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-            {couponsList.map(c => (
-                <div key={c.id} className="flex items-center justify-between bg-green-50/50 p-3 rounded-lg border border-green-100">
-                    <div>
-                        <p className="font-bold text-green-800 text-sm">{c.code}</p>
-                        <p className="text-[10px] text-green-600">Get {c.discount} Off • Exp: {c.expiry || 'N/A'}</p>
-                    </div>
-                    <button onClick={() => removeCoupon(c.id)} className="text-gray-400 hover:text-red-500"><Trash2 size={16}/></button>
-                </div>
-            ))}
-          </div>
+      <p className="text-[10px] text-green-600">
+        Get{" "}
+        {c.discount_type === "PERCENT"
+          ? `${c.discount_value}%`
+          : `₹${c.discount_value}`
+        } OFF
+        {c.expiry_date && ` • Exp: ${c.expiry_date}`}
+      </p>
+    </div>
+
+    {/* 🗑 DELETE */}
+    <button
+      onClick={() => removeCoupon(c.coupon_id)}
+      className="text-gray-400 hover:text-red-500 transition"
+    >
+      <Trash2 size={16} />
+    </button>
+  </div>
+))}
+
+</div>
+
         </div>
 
         {/* --- CARD 2: AD BANNERS --- */}

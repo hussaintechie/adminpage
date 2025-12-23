@@ -12,6 +12,13 @@ import {
   ChevronRight, Package, User, X, Check, ChevronDown, FileText, Truck, Image as ImageIcon, CreditCard, RefreshCcw
 } from 'lucide-react'
 
+const playNewOrderSound = () => {
+  const audio = new Audio("public/sounds/sound.aac");
+  audio.volume = 0.7;
+  audio.play().catch(() => {
+    // browser may block autoplay – safe ignore
+  });
+};
 
 
 const formatDeliverySlot = (startStr, endStr) => {
@@ -49,6 +56,8 @@ const formatDeliverySlot = (startStr, endStr) => {
 
 
 export default function Orders() {
+  const [prevTotalOrders, setPrevTotalOrders] = useState(0);
+
     const [orderDetails, setOrderDetails] = useState(null);
     const [detailsLoading, setDetailsLoading] = useState(false);
 
@@ -117,12 +126,14 @@ export default function Orders() {
   }
 };
 
-  const handleOutForDelivery = async (e, orderId) => {
+  const handleOutForDelivery = async (e, orderId, status) => {
   e.stopPropagation();
-if (status === "delivered") {
+
+  if (status === "delivered") {
     alert("This order has already been delivered.");
     return;
   }
+
   const confirmAction = window.confirm(
     "Are you sure you want to mark this order as Out for Delivery?"
   );
@@ -133,17 +144,16 @@ if (status === "delivered") {
     const res = await markOutForDeliveryAPI(orderId);
 
     if (res.data.status === 1) {
-      alert("Order marked as Out for Delivery");
-       fetchorders(); // optional refresh
+      fetchorders(); // 🔄 refresh UI
     } else {
       alert(res.data.message);
     }
-
   } catch (err) {
     console.error(err);
     alert("Failed to update order status");
   }
 };
+
   // --- RESET FILTERS ---
   const clearFilters = () => {
       setStatusFilter('All');
@@ -194,43 +204,61 @@ if (status === "delivered") {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
 
-  const STATUS_OPTIONS = ['All', 'Pending', 'delivered']
+  const STATUS_OPTIONS = ['All', 'Pending', 'delivered', 'out_for_delivery'];
   const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const YEARS = ['2023', '2024', '2025']
   useEffect(()=>{
     fetchorders();
   },[currentPage])
-  const fetchorders =async ()=>
-  {
-    try{
-        setLoading(true)
-        const res = await getOrdersAPI(currentPage,itemsPerPage)
-        if (res.data.status ===1)
-        {
-            setOrders(
-                res.data.data.map(o =>({
-                    id:o.order_id,
-                    orderNo:o.order_no,
-                    amount:`₹${o.total_amount}`,
-                    status:o.order_status,
-                    phone:o.phone,
-                     customer:o.name,
-                    deliveryStart: o.delivery_start,
-                    deliveryEnd: o.delivery_end,
-                     items: Number(o.item_count) || 0,
+  useEffect(() => {
+  fetchorders();
 
-                })),
-                setTotalOrders(res.data.total)
-                
-            )
-        }
+  const interval = setInterval(() => {
+    fetchorders();
+  }, 15000); // 15 seconds
+
+  return () => clearInterval(interval);
+}, []);
+
+const fetchorders = async () => {
+  try {
+    setLoading(true);
+
+    const res = await getOrdersAPI(currentPage, itemsPerPage);
+
+    if (res.data.status === 1) {
+      const newTotal = res.data.total; // ✅ FIX
+
+      // 🔔 Play sound only if new order arrived
+      if (prevTotalOrders > 0 && newTotal > prevTotalOrders) {
+        playNewOrderSound();
+      }
+
+      setPrevTotalOrders(newTotal);
+
+      setOrders(
+        res.data.data.map(o => ({
+          id: o.order_id,
+          orderNo: o.order_no,
+          amount: `₹${o.total_amount}`,
+          status: o.order_status,
+          phone: o.phone,
+          customer: o.name,
+          deliveryStart: o.delivery_start,
+          deliveryEnd: o.delivery_end,
+          items: Number(o.item_count) || 0,
+        }))
+      );
+
+      setTotalOrders(newTotal);
     }
-    catch (err) {
+  } catch (err) {
     console.error(err);
   } finally {
     setLoading(false);
   }
-  }
+};
+
 const handleViewOrder = async (orderId) => {
   try {
     setDetailsLoading(true);

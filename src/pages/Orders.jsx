@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect,useRef  } from 'react'
 import StatusBadge from '../components/StatusBadge'
 import {
   getOrdersAPI,
@@ -6,6 +6,8 @@ import {
   markOutForDeliveryAPI,
   printInvoiceAPI
 } from "../api/orders"
+import { io } from "socket.io-client";
+
 
 import { 
   Filter, FileSpreadsheet, ChevronLeft, Printer, Calendar, Clock, Phone, Mail, MapPin, 
@@ -13,7 +15,7 @@ import {
 } from 'lucide-react'
 
 const playNewOrderSound = () => {
-  const audio = new Audio("public/sounds/sound.aac");
+  const audio = new Audio("/sounds/sound.aac");
   audio.volume = 0.7;
   audio.play().catch(() => {
     // browser may block autoplay – safe ignore
@@ -56,8 +58,28 @@ const formatDeliverySlot = (startStr, endStr) => {
 
 
 export default function Orders() {
-  const [prevTotalOrders, setPrevTotalOrders] = useState(0);
+ 
+const orderSoundRef = useRef(null);
 
+useEffect(() => {
+  orderSoundRef.current = new Audio("/sounds/sound.aac");
+  orderSoundRef.current.volume = 0;
+
+  const unlock = () => {
+    orderSoundRef.current.play().catch(() => {});
+    window.removeEventListener("click", unlock);
+  };
+
+  window.addEventListener("click", unlock);
+}, []);
+
+const playNewOrderSound = () => {
+  if (!orderSoundRef.current) return;
+
+  orderSoundRef.current.volume = 0.7;
+  orderSoundRef.current.currentTime = 0;
+  orderSoundRef.current.play();
+};
     const [orderDetails, setOrderDetails] = useState(null);
     const [detailsLoading, setDetailsLoading] = useState(false);
 
@@ -210,15 +232,6 @@ export default function Orders() {
   useEffect(()=>{
     fetchorders();
   },[currentPage])
-  useEffect(() => {
-  fetchorders();
-
-  const interval = setInterval(() => {
-    fetchorders();
-  }, 15000); // 15 seconds
-
-  return () => clearInterval(interval);
-}, []);
 
 const fetchorders = async () => {
   try {
@@ -230,11 +243,9 @@ const fetchorders = async () => {
       const newTotal = res.data.total; // ✅ FIX
 
       // 🔔 Play sound only if new order arrived
-      if (prevTotalOrders > 0 && newTotal > prevTotalOrders) {
-        playNewOrderSound();
-      }
+      
 
-      setPrevTotalOrders(newTotal);
+     
 
       setOrders(
         res.data.data.map(o => ({

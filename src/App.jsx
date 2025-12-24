@@ -7,7 +7,7 @@ import Customers from './pages/Customers'
 import Drivers from './pages/Drivers'
 import Settings from './pages/Settings'
 import SuperDeals from './pages/SuperDeals'
-import Sample from "./pages/Sample"
+
 
 function App() {
   return (
@@ -22,11 +22,11 @@ function App() {
           <Route path="/drivers" element={<Drivers />} />
           <Route path="superdeals" element={<SuperDeals/>}/>
           <Route path="/settings" element={<Settings />} />
-          <Route path="/sample" element={<Sample />} />
+          
         </Route>
       </Routes>
     </BrowserRouter>
   )
 }
 
-export default App
+export default App;

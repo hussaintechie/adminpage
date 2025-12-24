@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Search, 
   Plus, 
@@ -12,33 +12,18 @@ import {
   ChevronLeft,
   Upload
 } from 'lucide-react';
-
-// Mock Data
-const MOCK_DRIVERS = [
-  { 
-    id: 1, 
-    name: 'Rajesh Kumar', 
-    mobile: '+91 98765 43210', 
-    aadhar: '4567 8901 2345', 
-    address: 'Sector 45, Gurgaon, Haryana', 
-    status: 'Active',
-    photo: null 
-  },
-  { 
-    id: 2, 
-    name: 'Suresh Singh', 
-    mobile: '+91 87654 32109', 
-    aadhar: '9012 3456 7890', 
-    address: 'HSR Layout, Bangalore, Karnataka', 
-    status: 'On Leave',
-    photo: null 
-  }
-];
+import Pagination from '../components/Pagination'; // 1. Import Pagination
+import { MOCK_DRIVERS } from '../data/mockData';
 
 export default function Drivers() {
   const [view, setView] = useState('list'); // 'list' | 'add'
   const [drivers, setDrivers] = useState(MOCK_DRIVERS);
   const fileInputRef = useRef(null);
+
+  // --- PAGINATION & SEARCH STATE ---
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6; // Number of items per page
 
   // Form State
   const [formData, setFormData] = useState({
@@ -49,6 +34,26 @@ export default function Drivers() {
     photo: null,
     previewUrl: null
   });
+
+  // --- FILTER & PAGINATION LOGIC ---
+  
+  // 1. Filter based on search
+  const filteredDrivers = drivers.filter(driver => 
+    driver.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    driver.mobile.includes(searchTerm) ||
+    driver.aadhar.includes(searchTerm)
+  );
+
+  // 2. Slice data for current page
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentDrivers = filteredDrivers.slice(indexOfFirstItem, indexOfLastItem);
+
+  // 3. Reset to page 1 if search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -89,7 +94,6 @@ export default function Drivers() {
       
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* Added pl-14 to prevent menu button overlap on mobile */}
         <div className="pl-14 md:pl-0">
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Driver Management</h1>
           <p className="text-slate-500 text-sm mt-1">Onboard and manage delivery partners.</p>
@@ -126,8 +130,6 @@ export default function Drivers() {
               {/* Left Column: Photo Upload */}
               <div className="md:col-span-1 space-y-4">
                 <label className="block text-sm font-semibold text-gray-700">Driver Photo</label>
-                
-                {/* Constrained width on mobile (w-48 mx-auto), full width on desktop (md:w-full) */}
                 <div 
                   onClick={() => fileInputRef.current?.click()}
                   className={`
@@ -245,7 +247,7 @@ export default function Drivers() {
 
       {/* --- LIST VIEW --- */}
       {view === 'list' && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
           {/* List Search Header */}
           <div className="p-4 border-b border-gray-100 flex gap-4 bg-gray-50/50">
             <div className="relative flex-1 md:max-w-md w-full">
@@ -253,6 +255,8 @@ export default function Drivers() {
               <input 
                 type="text" 
                 placeholder="Search drivers..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" 
               />
             </div>
@@ -271,7 +275,7 @@ export default function Drivers() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {drivers.map((driver) => (
+                {currentDrivers.map((driver) => (
                   <tr key={driver.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -322,7 +326,7 @@ export default function Drivers() {
 
           {/* MOBILE: Card List View (Hidden on Desktop) */}
           <div className="md:hidden divide-y divide-gray-100">
-            {drivers.map((driver) => (
+            {currentDrivers.map((driver) => (
               <div key={driver.id} className="p-4 bg-white">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -365,11 +369,19 @@ export default function Drivers() {
             ))}
           </div>
           
-          {drivers.length === 0 && (
+          {currentDrivers.length === 0 && (
             <div className="p-12 text-center text-slate-400">
-              No drivers found. Click "Add New Driver" to start.
+              No drivers found.
             </div>
           )}
+
+          {/* --- PAGINATION CONTROLS --- */}
+          <Pagination 
+            currentPage={currentPage}
+            totalItems={filteredDrivers.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       )}
     </div>

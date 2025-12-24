@@ -4,32 +4,8 @@ import StatusBadge from '../components/StatusBadge'
 import RatingStars from '../components/RatingStars'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { ShoppingBasket, DollarSign, Clock, AlertTriangle, Package, User, Calendar, ChevronRight, TrendingUp, ArrowUpRight } from 'lucide-react'
-
+import {REVENUE_DATA,LOW_STOCK_DATA,MOCK_RECENT_ORDERS} from '../data/mockData'
 // --- INTERNAL MOCK DATA (To prevent white screen) ---
-const REVENUE_DATA = [
-  { name: 'Mon', sales: 4000 },
-  { name: 'Tue', sales: 3000 },
-  { name: 'Wed', sales: 2000 },
-  { name: 'Thu', sales: 2780 },
-  { name: 'Fri', sales: 1890 },
-  { name: 'Sat', sales: 2390 },
-  { name: 'Sun', sales: 3490 },
-];
-
-const LOW_STOCK_DATA = [
-  { id: 1, name: 'Amul Butter', category: 'Dairy', stock: 5 },
-  { id: 2, name: 'Farm Eggs', category: 'Dairy', stock: 8 },
-  { id: 3, name: 'Bread', category: 'Bakery', stock: 2 },
-  { id: 4, name: 'Milk', category: 'Dairy', stock: 10 },
-];
-
-const MOCK_RECENT_ORDERS = [
-  { id: '#ORD-7782', customer: 'Rahul Sharma', items: 5, amount: '₹1,250', status: 'Pending', deliveryTime: 'Today, 4:00 PM', rating: 0 },
-  { id: '#ORD-7781', customer: 'Priya Patel', items: 12, amount: '₹3,400', status: 'Delivered', deliveryTime: 'Yesterday, 2:30 PM', rating: 5 },
-  { id: '#ORD-7780', customer: 'Amit Singh', items: 2, amount: '₹450', status: 'Cancelled', deliveryTime: 'Yesterday, 10:00 AM', rating: 0 },
-  { id: '#ORD-7779', customer: 'Sneha Gupta', items: 8, amount: '₹2,100', status: 'Processing', deliveryTime: 'Today, 6:15 PM', rating: 0 },
-  { id: '#ORD-7778', customer: 'Vikram M', items: 4, amount: '₹890', status: 'Delivered', deliveryTime: 'Dec 02, 11:00 AM', rating: 4 },
-];
 
 // --- CUSTOM TOOLTIP COMPONENT ---
 const CustomTooltip = ({ active, payload, label }) => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useRef  } from 'react'
+import React, { useState, useEffect } from 'react'
 import StatusBadge from '../components/StatusBadge'
 import Pagination from '../components/Pagination' // 1. Import Pagination Component
 import {
@@ -7,8 +7,6 @@ import {
   markOutForDeliveryAPI,
   printInvoiceAPI
 } from "../api/orders"
-import { io } from "socket.io-client";
-
 
 import { 
   Filter, FileSpreadsheet, ChevronLeft, Printer, Calendar, Clock, Phone, Mail, MapPin, 
@@ -16,7 +14,7 @@ import {
 } from 'lucide-react'
 
 const playNewOrderSound = () => {
-  const audio = new Audio("/sounds/sound.aac");
+  const audio = new Audio("public/sounds/sound.aac");
   audio.volume = 0.7;
   audio.play().catch(() => {
     // browser may block autoplay – safe ignore
@@ -54,31 +52,11 @@ const formatDeliverySlot = (startStr, endStr) => {
 };
 
 export default function Orders() {
- 
-const orderSoundRef = useRef(null);
+  const [prevTotalOrders, setPrevTotalOrders] = useState(0);
 
-useEffect(() => {
-  orderSoundRef.current = new Audio("/sounds/sound.aac");
-  orderSoundRef.current.volume = 0;
+  const [orderDetails, setOrderDetails] = useState(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
 
-  const unlock = () => {
-    orderSoundRef.current.play().catch(() => {});
-    window.removeEventListener("click", unlock);
-  };
-
-  window.addEventListener("click", unlock);
-}, []);
-
-const playNewOrderSound = () => {
-  if (!orderSoundRef.current) return;
-
-  orderSoundRef.current.volume = 0.7;
-  orderSoundRef.current.currentTime = 0;
-  orderSoundRef.current.play();
-};
-    const [orderDetails, setOrderDetails] = useState(null);
-    const [detailsLoading, setDetailsLoading] = useState(false);
-  const[prevTotalOrders,setPrevTotalOrders  ]= useState(0);
   const [selectedOrderId, setSelectedOrderId] = useState(null)
   const [orders, setOrders] = useState([]);
   const [totalOrders, setTotalOrders] = useState(0);

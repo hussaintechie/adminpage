@@ -5,9 +5,7 @@ export const getOrdersAPI = (page, limit) => {
   return API.post("product/orderdatas", {
     limit,
     offset: (page - 1) * limit,
-    headers: {
-      "x-role": "admin", // ✅ IMPORTANT
-    },
+   
   });
 };
 

@@ -7,11 +7,22 @@ import Customers from './pages/Customers'
 import Drivers from './pages/Drivers'
 import Settings from './pages/Settings'
 import SuperDeals from './pages/SuperDeals'
+import { Toaster } from "react-hot-toast";
 
 
 function App() {
   return (
     <BrowserRouter>
+    
+      {/* ✅ GLOBAL TOASTER */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: { fontSize: "14px" },
+        }}
+      />
+
       <Routes>
         {/* WRAP ALL ROUTES INSIDE THE LAYOUT ELEMENT */}
         <Route element={<Layout />}>

@@ -1,96 +1,104 @@
-import React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useMemo } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const Pagination = ({ 
-  currentPage, 
-  totalItems, 
-  itemsPerPage, 
-  onPageChange 
+const Pagination = ({
+  currentPage = 1,
+  totalItems = 0,
+  itemsPerPage = 10,
+  onPageChange,
 }) => {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-  // Calculate range for "Showing 1-10 of 50"
-  const startItem = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  if (totalItems === 0 || totalPages <= 1) return null;
+
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
-  // Helper to generate page numbers
-  const getPageNumbers = () => {
-    const pages = [];
-    // Simple logic: Show all pages if under 7, otherwise just show a simplified range around current
-    // For this specific design, we will list all pages for simplicity, 
-    // or you can implement complex truncation (...) logic here.
-    for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-    }
-    return pages;
+  const pages = useMemo(() => {
+    const range = [];
+    const delta = 2;
+
+    const left = Math.max(2, currentPage - delta);
+    const right = Math.min(totalPages - 1, currentPage + delta);
+
+    range.push(1);
+
+    if (left > 2) range.push("...");
+
+    for (let i = left; i <= right; i++) range.push(i);
+
+    if (right < totalPages - 1) range.push("...");
+
+    if (totalPages > 1) range.push(totalPages);
+
+    return range;
+  }, [currentPage, totalPages]);
+
+  const goToPage = (page) => {
+    if (page === "..." || page < 1 || page > totalPages) return;
+    onPageChange(page);
   };
 
-  if (totalItems === 0) return null;
-
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-6 border-t border-gray-100 bg-white rounded-b-xl">
-      {/* Mobile: Simple Prev/Next */}
-      <div className="flex flex-1 justify-between sm:hidden w-full">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-6 border-t bg-white">
+      
+      {/* MOBILE */}
+      <div className="flex justify-between w-full sm:hidden">
         <button
-          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          onClick={() => goToPage(currentPage - 1)}
           disabled={currentPage === 1}
-          className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 border rounded-md text-sm"
         >
           Previous
         </button>
         <button
-          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+          onClick={() => goToPage(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 border rounded-md text-sm"
         >
           Next
         </button>
       </div>
 
-      {/* Desktop View */}
-      <div className="hidden sm:flex flex-1 items-center justify-between">
-        <div>
-          <p className="text-sm text-gray-700">
-            Showing <span className="font-bold">{startItem}</span> to <span className="font-bold">{endItem}</span> of <span className="font-bold">{totalItems}</span> results
-          </p>
-        </div>
-        <div>
-          <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-            {/* Previous Button */}
-            <button
-              onClick={() => onPageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span className="sr-only">Previous</span>
-              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-            </button>
+      {/* DESKTOP */}
+      <div className="hidden sm:flex w-full items-center justify-between">
+        <p className="text-sm text-gray-700">
+          Showing <b>{startItem}</b> to <b>{endItem}</b> of <b>{totalItems}</b>
+        </p>
 
-            {/* Page Numbers */}
-            {getPageNumbers().map((number) => (
-               <button
-                key={number}
-                onClick={() => onPageChange(number)}
-                className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0 ${
-                    currentPage === number 
-                    ? 'z-10 bg-emerald-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600' 
-                    : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {number}
-              </button>
-            ))}
+        <div className="inline-flex rounded-md shadow-sm">
+          <button
+            onClick={() => goToPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-2 py-2 border rounded-l-md"
+          >
+            <ChevronLeft size={16} />
+          </button>
 
-            {/* Next Button */}
+          {pages.map((page, idx) => (
             <button
-              onClick={() => onPageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+              key={idx}
+              disabled={page === "..."}
+              onClick={() => goToPage(page)}
+              className={`px-4 py-2 border text-sm ${
+                page === currentPage
+                  ? "bg-emerald-600 text-white"
+                  : page === "..."
+                  ? "cursor-default text-gray-400"
+                  : "hover:bg-gray-50"
+              }`}
             >
-              <span className="sr-only">Next</span>
-              <ChevronRight className="h-4 w-4" aria-hidden="true" />
+              {page}
             </button>
-          </nav>
+          ))}
+
+          <button
+            onClick={() => goToPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-2 py-2 border rounded-r-md"
+          >
+            <ChevronRight size={16} />
+          </button>
         </div>
       </div>
     </div>

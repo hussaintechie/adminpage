@@ -1,264 +1,217 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Upload, 
-  Plus, 
-  Trash2, 
-  FileSpreadsheet, 
-  Save, 
-  Image as ImageIcon, 
-  Search, 
-  Package, 
-  MoreVertical, 
-  AlertTriangle 
+import {
+  Upload,
+  Plus,
+  Trash2,
+  FileSpreadsheet,
+  Save,
+  Image as ImageIcon,
+  Search,
+  Package,
+  MoreVertical,
+  AlertTriangle,
+  Download
 } from 'lucide-react';
-import Pagination from '../components/Pagination'; // 1. Import Pagination
+import axios from "axios";
+import { useSearchParams } from "react-router-dom";
+
+// 1. Import Pagination
 import { EXISTING_PRODUCTS } from '../data/mockData';
+import PurchaseController from '../pages/Purchasecontroller';
+import Productlist from '../pages/Productlists';
+import ManualAddForm from '../pages/ManualAddForm';
+import LowStockView from '../pages/Lowstockdetails';
+import toast from "react-hot-toast";
+import * as XLSX from "xlsx";
 
-// --- COMPONENT: LOW STOCK VIEW ---
-const LowStockView = ({ inventory }) => {
-  const lowStockItems = inventory.filter(item => item.stock < 20);
 
-  return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-      <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex gap-4 items-start">
-        <div className="bg-orange-100 p-2 rounded-full text-orange-600 shrink-0">
-          <AlertTriangle size={24} />
-        </div>
-        <div>
-          <h3 className="font-bold text-orange-800 text-lg">Attention Needed</h3>
-          <p className="text-orange-700/80 text-sm mt-1">
-            You have <b>{lowStockItems.length} products</b> running low on stock (below 20 units). 
-          </p>
-        </div>
-      </div>
+/* ===== REQUIRED EXCEL HEADERS (STRICT) ===== */
+const REQUIRED_HEADERS = [
+  "title",
+  "categoriesname",
+  "quantity",
+  "price",
+  "mrp",
+  "description",
+  "unit"
+];
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <h3 className="font-bold text-gray-800">Low Stock Items</h3>
-        </div>
-
-        {lowStockItems.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            No low stock items found. Great job!
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-             <table className="w-full text-left">
-              <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
-                <tr>
-                  <th className="px-6 py-4">Product</th>
-                  <th className="px-6 py-4">Current Stock</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {lowStockItems.map((item) => (
-                  <tr key={item.id} className="hover:bg-orange-50/30 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 border border-slate-200 overflow-hidden">
-                           {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover"/> : <ImageIcon size={18} />}
-                        </div>
-                        <div>
-                          <div className="font-bold text-slate-800">{item.name}</div>
-                          <div className="text-xs text-slate-400 font-mono">{item.sku}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-bold text-red-600">{item.stock}</span>
-                        <span className="text-xs text-slate-400">units left</span>
-                      </div>
-                      <div className="w-24 h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden">
-                        <div className={`h-full rounded-full ${item.stock === 0 ? 'bg-red-500' : 'bg-orange-400'}`} style={{ width: `${(item.stock / 20) * 100}%` }}></div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${item.stock === 0 ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
-                        {item.stock === 0 ? 'Out of Stock' : 'Low Stock'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button className="bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-900 transition-colors shadow-md shadow-slate-200">
-                        Restock
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// --- COMPONENT: MANUAL ADD FORM ---
-const ManualAddForm = ({ onSave, onCancel }) => {
-  const [product, setProduct] = useState({
-    name: '', brand: '', description: '', category: 'Dairy',
-    unit: 'pcs', basePrice: '', mrp: '', stockQty: '', sku: '',
-    status: 'Active', image: null
-  });
-
-  const handleInputChange = (e) => setProduct({ ...product, [e.target.name]: e.target.value });
-
-  const handleImageUpload = (e) => {
-      const file = e.target.files[0];
-      if (file) {
-          setProduct({ ...product, image: URL.createObjectURL(file) });
-      }
-  }
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!product.name || !product.basePrice || !product.mrp) {
-      alert("Please fill in required fields (Name, Price, MRP)");
-      return;
-    }
-    onSave(product);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-gray-100">
-        <div className="lg:col-span-2 p-4 md:p-6 space-y-6">
-          <div className="flex justify-between items-center">
-            <h3 className="font-bold text-gray-800 text-lg">Product Details</h3>
-            <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">General</span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="col-span-2 md:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-              <input name="name" value={product.name} onChange={handleInputChange} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="e.g. Amul Butter" />
-            </div>
-            <div className="col-span-2 md:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-              <input name="brand" value={product.brand} onChange={handleInputChange} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="e.g. Amul" />
-            </div>
-          </div>
-          <div className="pt-4 border-t border-gray-100">
-            <h3 className="font-bold text-gray-800 text-lg mb-4">Inventory</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
-                <input name="sku" value={product.sku} onChange={handleInputChange} className="w-full border border-gray-300 rounded-lg p-2.5 font-mono outline-none focus:ring-2 focus:ring-emerald-500" placeholder="GEN-SKU" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
-                <input type="number" name="stockQty" value={product.stockQty} onChange={handleInputChange} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="0" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <select name="category" value={product.category} onChange={handleInputChange} className="w-full border border-gray-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-emerald-500">
-                  <option>Dairy</option>
-                  <option>Vegetables</option>
-                  <option>Bakery</option>
-                  <option>Meat</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="lg:col-span-1 bg-gray-50/50 p-4 md:p-6 space-y-6">
-          
-          {/* Image Upload Field */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Product Image</label>
-            <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 flex flex-col items-center justify-center bg-white hover:bg-gray-50 transition-colors cursor-pointer relative h-32">
-                <input type="file" accept="image/*" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                {product.image ? (
-                    <img src={product.image} alt="Preview" className="h-full w-full object-contain rounded-lg" />
-                ) : (
-                    <div className="text-center">
-                        <div className="bg-gray-100 p-2 rounded-full inline-block mb-1"><ImageIcon size={20} className="text-gray-400"/></div>
-                        <p className="text-xs text-gray-500">Tap to upload</p>
-                    </div>
-                )}
-            </div>
-          </div>
-
-          <div className="space-y-4">
-             {/* Pricing Section */}
-             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">MRP (₹) *</label>
-                <input type="number" name="mrp" value={product.mrp} onChange={handleInputChange} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-emerald-500 bg-white" placeholder="60.00" />
-                <p className="text-[10px] text-gray-500 mt-1">Maximum Retail Price printed on pack.</p>
-             </div>
-
-             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Selling Price (₹) *</label>
-                <input type="number" name="basePrice" value={product.basePrice} onChange={handleInputChange} className="w-full border border-gray-300 rounded-lg p-2.5 text-lg font-bold outline-none focus:ring-2 focus:ring-emerald-500" placeholder="0.00" />
-                <p className="text-[10px] text-emerald-600 mt-1 font-medium">Your selling price to customers.</p>
-             </div>
-          </div>
-
-          <div className="flex gap-3 pt-4 border-t border-gray-200">
-             <button type="submit" className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition-colors">Save</button>
-             <button type="button" onClick={onCancel} className="flex-1 bg-white border border-gray-300 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-50 transition-colors">Cancel</button>
-          </div>
-        </div>
-      </div>
-    </form>
-  );
-};
-
-// --- COMPONENT: BULK UPLOAD ---
-const BulkUpload = ({ onImport, onCancel }) => {
-  const [data, setData] = useState([]);
+/* ================= BULK UPLOAD ================= */
+const BulkUpload = ({ onCancel }) => {
+  const [file, setFile] = useState(null);
+  const [fileName, setFileName] = useState("");
+  const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
 
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setTimeout(() => {
-        setData([
-            {Name: "Bulk Item 1", Price: "100", MRP: "120", Stock: "50", Category: "Dairy", SKU: "BLK-001"},
-            {Name: "Bulk Item 2", Price: "250", MRP: "300", Stock: "20", Category: "Bakery", SKU: "BLK-002"},
-        ]);
-    }, 500);
+  /* -------- DOWNLOAD TEMPLATE -------- */
+  const downloadExactExcel = () => {
+    window.location.href = "/templates/inventory_bulk_template.xlsx";
+  };
+
+  /* -------- FILE SELECT + STRICT VALIDATION -------- */
+  const handleFileUpload = async (e) => {
+    const selectedFile = e.target.files[0];
+    if (!selectedFile) return;
+
+    /* File type check */
+    if (!/\.(xlsx|xls)$/i.test(selectedFile.name)) {
+      toast.error("Only Excel files (.xlsx or .xls) are allowed");
+      return;
+    }
+
+    try {
+      const buffer = await selectedFile.arrayBuffer();
+      const workbook = XLSX.read(buffer, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+      const sheetData = XLSX.utils.sheet_to_json(sheet, {
+        header: 1,
+        defval: ""
+      });
+
+      if (!sheetData.length) {
+        toast.error("Excel file is empty");
+        return;
+      }
+
+      const uploadedHeaders = sheetData[0].map(h =>
+        h.toString().trim()
+      );
+
+      /* Header count check */
+      if (uploadedHeaders.length !== REQUIRED_HEADERS.length) {
+        toast.error("Invalid Excel format. Use only the downloaded template.");
+        return;
+      }
+
+      /* Header name + order check */
+      const isValid = REQUIRED_HEADERS.every(
+        (h, i) => h === uploadedHeaders[i]
+      );
+
+      if (!isValid) {
+        toast.error(
+          "Excel headers mismatch.\nRequired: title, categoriesname, quantity, price, mrp, description, unit"
+        );
+        return;
+      }
+
+      setFile(selectedFile);
+      setFileName(selectedFile.name);
+      toast.success("Valid Excel template selected");
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to read Excel file");
+    }
+  };
+
+  /* -------- IMPORT (API CALL) -------- */
+  const handleImport = async () => {
+    if (!file) {
+      toast.error("Please select a valid Excel file");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await axios.post(
+        "http://localhost:5000/product/createitmfile",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (res.data?.status === 1) {
+        toast.success("Bulk upload successful");
+        onCancel();
+      } else {
+        toast.error(res.data?.message || "Upload failed");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Server error while uploading");
+    } finally {
+      setLoading(false);
+      setFile(null);
+      setFileName("");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <div 
-        onClick={() => fileInputRef.current?.click()}
-        className="border-2 border-dashed border-gray-300 rounded-2xl p-8 flex flex-col items-center justify-center text-center hover:bg-slate-50 cursor-pointer transition-colors"
-      >
-        <div className="bg-emerald-50 p-4 rounded-full mb-4"><Upload className="text-emerald-600 w-8 h-8" /></div>
-        <h3 className="text-lg font-bold text-gray-800 mb-1">Upload Inventory File</h3>
-        <p className="text-gray-500 mb-4 text-sm">Tap to upload .CSV or .XLSX</p>
-        <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".csv, .xlsx, .xls" />
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-8">
+      <div className="flex justify-between items-center mb-5">
+        <h2 className="text-lg font-bold text-gray-800">Bulk Upload Inventory</h2>
+        <button
+          onClick={downloadExactExcel}
+          className="flex items-center gap-2 text-sm font-medium text-emerald-600 hover:text-emerald-700"
+        >
+          <Download className="w-4 h-4" /> Download Excel
+        </button>
       </div>
-      {data.length > 0 && (
-        <div className="mt-6">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-bold text-gray-800">Preview ({data.length})</h3>
-            <div className="flex gap-2">
-                <button onClick={onCancel} className="px-4 py-2 text-sm text-gray-500 font-medium">Cancel</button>
-                <button onClick={() => onImport(data)} className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium">Import</button>
-            </div>
-          </div>
-          <div className="bg-gray-50 p-3 rounded-lg text-sm text-gray-600 border border-gray-200">
-              {data.map((row, i) => <div key={i} className="border-b border-gray-200 last:border-0 py-1">{row.Name} - SP: ₹{row.Price} / MRP: ₹{row.MRP}</div>)}
-          </div>
+
+      <div
+        onClick={() => fileInputRef.current?.click()}
+        className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center cursor-pointer hover:bg-gray-50"
+      >
+        <div className="bg-emerald-50 p-4 rounded-full inline-flex mb-3">
+          <Upload className="w-8 h-8 text-emerald-600" />
         </div>
-      )}
+        <h3 className="font-semibold text-gray-800">Upload Excel File</h3>
+        <p className="text-sm text-gray-500">Upload only the downloaded format</p>
+        {fileName && <p className="text-xs mt-2 text-gray-600">{fileName}</p>}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileUpload}
+          className="hidden"
+          accept=".xlsx,.xls"
+        />
+      </div>
+
+      <div className="flex justify-end gap-2 mt-6">
+        <button onClick={onCancel} className="text-sm text-gray-500" disabled={loading}>
+          Cancel
+        </button>
+        <button
+          onClick={handleImport}
+          disabled={loading}
+          className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm"
+        >
+          {loading ? "Importing..." : "Import"}
+        </button>
+      </div>
     </div>
   );
 };
+
 
 // --- MAIN INVENTORY COMPONENT ---
 const Inventory = () => {
-  const [activeTab, setActiveTab] = useState('list');
+  const [searchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get("tab");
+
+  const [activeTab, setActiveTab] = useState(tabFromUrl || "list");
+
+  useEffect(() => {
+    if (tabFromUrl) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
   const [inventory, setInventory] = useState(EXISTING_PRODUCTS);
-  
-  // --- PAGINATION & SEARCH STATE ---
+
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+
   const itemsPerPage = 8; // Number of items to show per page
 
   const handleSaveProduct = (newProduct) => {
@@ -266,19 +219,19 @@ const Inventory = () => {
     setActiveTab('list');
   };
 
-  const handleBulkImport = (data) => {
-    const newItems = data.map((item, idx) => ({ 
-        id: Date.now() + idx, name: item.Name, sku: item.SKU || 'BULK-001', category: item.Category, price: item.Price, mrp: item.MRP || item.Price, stock: item.Stock, status: 'Active' 
-    }));
-    setInventory([...newItems, ...inventory]);
-    setActiveTab('list');
-  };
+  // const handleBulkImport = (data) => {
+  //   const newItems = data.map((item, idx) => ({ 
+  //       id: Date.now() + idx, name: item.Name, sku: item.SKU || 'BULK-001', category: item.Category, price: item.Price, mrp: item.MRP || item.Price, stock: item.Stock, status: 'Active' 
+  //   }));
+  //   setInventory([...newItems, ...inventory]);
+  //   setActiveTab('list');
+  // };
 
   // --- FILTER & PAGINATION LOGIC ---
-  
+
   // 1. Filter
-  const filteredInventory = inventory.filter(item => 
-    item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredInventory = inventory.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.sku.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -295,7 +248,7 @@ const Inventory = () => {
   return (
     <div className="font-sans p-4 md:p-8 pb-24">
       <div className="max-w-6xl mx-auto space-y-6">
-        
+
         {/* Header Block */}
         <div className="space-y-4">
           <div className="flex justify-between items-center">
@@ -303,152 +256,44 @@ const Inventory = () => {
               <Package className="text-emerald-600" size={28} /> Inventory
             </h1>
           </div>
-          
+
           <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm pt-2 pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:static md:bg-transparent md:p-0">
             <div className="w-full overflow-x-auto no-scrollbar">
-                <div className="bg-white p-1.5 rounded-xl border border-gray-200 shadow-sm flex whitespace-nowrap min-w-max">
+              <div className="bg-white p-1.5 rounded-xl border border-gray-200 shadow-sm flex whitespace-nowrap min-w-max">
                 {[
-                    { id: 'list', label: 'Inventory List' },
-                    { id: 'low_stock', label: 'Low Stock', icon: AlertTriangle },
-                    { id: 'manual', label: 'Add Product', icon: Plus },
-                    { id: 'bulk', label: 'Bulk Upload', icon: FileSpreadsheet }
+                  { id: 'list', label: 'Inventory List' },
+                  { id: 'low_stock', label: 'Low Stock', icon: AlertTriangle },
+                  { id: 'manual', label: 'Add Product', icon: Plus },
+                  { id: 'bulk', label: 'Bulk Upload', icon: FileSpreadsheet },
+                  { id: 'inv_list', label: 'Stock List', icon: FileSpreadsheet },
+                  { id: 'inv_manage', label: 'Inventory Manage', icon: FileSpreadsheet },
                 ].map(tab => (
-                    <button 
+                  <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`px-4 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-all ${
-                        activeTab === tab.id 
+                    className={`px-4 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-all ${activeTab === tab.id
                         ? (tab.id === 'low_stock' ? 'bg-orange-100 text-orange-700 shadow-sm' : 'bg-slate-800 text-white shadow-md')
                         : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                    >
+                      }`}
+                  >
                     {tab.icon && <tab.icon size={16} />} {tab.label}
-                    </button>
+                  </button>
                 ))}
-                </div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* --- VIEWS --- */}
         {activeTab === 'list' && (
-          <div className="space-y-4 animate-in fade-in duration-300">
-            {/* Search Input */}
-            <div className="bg-white rounded-xl border border-gray-200 p-3 flex gap-2 items-center shadow-sm">
-              <Search className="text-gray-400 ml-1" size={20} />
-              <input 
-                type="text" 
-                placeholder="Search products..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full outline-none text-sm py-1" 
-              />
-            </div>
-
-            {/* Mobile Cards */}
-            <div className="md:hidden space-y-3">
-              {currentItems.map((item) => (
-                <div key={item.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                  <div className="flex justify-between items-start gap-3">
-                    <div className="flex gap-3">
-                        {/* Mobile Image Placeholder */}
-                        <div className="w-14 h-14 bg-slate-100 rounded-lg flex items-center justify-center text-slate-300 border border-slate-200 shrink-0">
-                            {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover rounded-lg"/> : <ImageIcon size={20}/>}
-                        </div>
-                        <div>
-                        <h3 className="font-bold text-slate-800 text-lg leading-tight">{item.name}</h3>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                            <span className="text-[10px] font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 border border-slate-200">{item.sku}</span>
-                            <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100 font-medium">{item.category}</span>
-                        </div>
-                        </div>
-                    </div>
-                    <button className="text-slate-300 p-1"><MoreVertical size={20}/></button>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 mt-4 pt-3 border-t border-slate-50 items-end">
-                    <div>
-                      <span className="text-xs text-slate-400 font-medium uppercase">Price</span>
-                      <div className="flex items-baseline gap-2">
-                        <span className="font-bold text-xl text-emerald-600">₹{item.price}</span>
-                        {item.mrp && <span className="text-xs text-slate-400 line-through">₹{item.mrp}</span>}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                        <span className="text-xs text-slate-400 font-medium uppercase block mb-1">Status</span>
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold inline-block ${item.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                        {item.status}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Desktop Table */}
-            <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm flex flex-col">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                    <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
-                        <tr>
-                        <th className="px-6 py-4">Image</th> 
-                        <th className="px-6 py-4">Product</th>
-                        <th className="px-6 py-4">Category</th>
-                        <th className="px-6 py-4">MRP</th>
-                        <th className="px-6 py-4">Price</th>
-                        <th className="px-6 py-4">Stock</th>
-                        <th className="px-6 py-4">Status</th>
-                        <th className="px-6 py-4 text-right">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                        {currentItems.map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                            <td className="px-6 py-4">
-                                <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 border border-slate-200 overflow-hidden">
-                                    {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover"/> : <ImageIcon size={18} />}
-                                </div>
-                            </td>
-                            <td className="px-6 py-4 font-medium">
-                                <div className="text-slate-800">{item.name}</div>
-                                <div className="text-xs text-slate-400 font-mono mt-0.5">{item.sku}</div>
-                            </td>
-                            <td className="px-6 py-4"><span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs font-medium text-slate-600">{item.category}</span></td>
-                            <td className="px-6 py-4 text-slate-400 line-through text-sm">₹{item.mrp || '-'}</td>
-                            <td className="px-6 py-4 font-bold text-slate-700">₹{item.price}</td>
-                            <td className="px-6 py-4 text-sm font-medium">{item.stock}</td>
-                            <td className="px-6 py-4">
-                                <span className={`px-2 py-1 rounded-full text-xs font-bold ${item.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                {item.status}
-                                </span>
-                            </td>
-                            <td className="px-6 py-4 text-right">
-                                <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
-                                    <Trash2 size={18}/>
-                                </button>
-                            </td>
-                        </tr>
-                        ))}
-                    </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            {/* Pagination Component */}
-            <Pagination 
-                currentPage={currentPage}
-                totalItems={filteredInventory.length}
-                itemsPerPage={itemsPerPage}
-                onPageChange={setCurrentPage}
-            />
-          </div>
+          <Productlist />
         )}
 
         {/* Form Views */}
-        {activeTab === 'low_stock' && <LowStockView inventory={inventory} />}
+        {activeTab === 'low_stock' && <LowStockView />}
         {activeTab === 'manual' && <ManualAddForm onSave={handleSaveProduct} onCancel={() => setActiveTab('list')} />}
-        {activeTab === 'bulk' && <BulkUpload onImport={handleBulkImport} onCancel={() => setActiveTab('list')} />}
-
+        {activeTab === 'bulk' && <BulkUpload onCancel={() => setActiveTab('list')} />}
+        {activeTab === "inv_list" && <PurchaseController onBack={() => setActiveTab("list")} />}
       </div>
     </div>
   );

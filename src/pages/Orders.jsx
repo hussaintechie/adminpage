@@ -84,10 +84,32 @@ export default function Orders() {
     alert(`Generating Invoice for ${orderId}...`)
   }
 
-  const handleOutForDelivery = (e, orderId) => {
-    e.stopPropagation();
-    alert(`Marking ${orderId} as Out for Delivery`)
+  const handleOutForDelivery = async (e, orderId) => {
+  e.stopPropagation();
+
+  const confirmAction = window.confirm(
+    "Are you sure you want to mark this order as Out for Delivery?"
+  );
+
+  if (!confirmAction) return;
+
+  try {
+    const res = await markOutForDeliveryAPI(orderId);
+
+    if (res.data.status === 1) {
+      alert("Order marked as Out for Delivery");
+      // fetchOrders(); // optional refresh
+    } else {
+      alert(res.data.message);
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert("Failed to update order status");
   }
+};
+
+  
 
   // --- RESET FILTERS ---
   const clearFilters = () => {
@@ -179,49 +201,55 @@ export default function Orders() {
 const handleViewOrder = async (orderId) => {
   try {
     setDetailsLoading(true);
+    setOrderDetails(null);
 
     const res = await getSingleOrderAPI(orderId);
 
-    if (res.data.status !== 1) {
-      throw new Error("Order not found");
+    if (!res?.data || res.data.status !== 1) {
+      throw new Error("Invalid API response");
     }
 
-    const apiData = res.data.data;
+    const apiData = res.data.data || {};
 
     setOrderDetails({
       id: `#ORD-${orderId}`,
-      status: "Pending",
-      date: apiData.paydetails.pay_date,
+      status: apiData.order_status || "Pending",
+      date: apiData?.paydetails?.pay_date || "-",
       time: "",
       summary: {
-        total: apiData.billdetails.total_amount,
+        total: Number(apiData?.billdetails?.total_amount || 0),
       },
       customer: {
-        name: apiData.customer.name,
-        phone: apiData.customer.phone,
-        address: apiData.address,
+        name: apiData?.customer?.name || "N/A",
+        phone: apiData?.customer?.phone || "N/A",
+        address: apiData?.address || "N/A",
       },
-      items: apiData.itmdetails.map((itm, idx) => ({
-        id: idx + 1,
-        name: itm.itmname,
-        price: itm.itmamt,
-        qty: itm.qty,
-        total: itm.itmamt * itm.qty,
-      })),
+      items: Array.isArray(apiData.itmdetails)
+        ? apiData.itmdetails.map((itm, idx) => ({
+            id: idx + 1,
+            name: itm.itmname || "Item",
+            price: Number(itm.itmamt || 0),
+            qty: Number(itm.qty || 0),
+            total: Number(itm.itmamt || 0) * Number(itm.qty || 0),
+          }))
+        : [],
     });
 
-    // ✅ SWITCH VIEW ONLY AFTER DATA EXISTS
+    // ✅ switch view ONLY after state is ready
     setSelectedOrderId(orderId);
 
   } catch (err) {
-    console.error("Single order fetch failed", err);
+    console.error("Single order fetch failed:", err);
+    console.error("API ERROR RESPONSE:", err?.response?.data);
+
     alert("Unable to load order details");
-    console.log("FULL API RESPONSE:", res.data);
+    setSelectedOrderId(null);
 
   } finally {
     setDetailsLoading(false);
   }
 };
+
 
 
   if (selectedOrderId) {

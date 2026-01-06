@@ -1,4 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from "react";
+import { getDashboardAPI } from "../api/dashboard";
+
 import StatCard from '../components/StatCard'
 import StatusBadge from '../components/StatusBadge'
 import RatingStars from '../components/RatingStars'
@@ -6,15 +8,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { ShoppingBasket, DollarSign, Clock, AlertTriangle, Package, User, Calendar, ChevronRight, TrendingUp, ArrowUpRight } from 'lucide-react'
 
 // --- INTERNAL MOCK DATA (To prevent white screen) ---
-const REVENUE_DATA = [
-  { name: 'Mon', sales: 4000 },
-  { name: 'Tue', sales: 3000 },
-  { name: 'Wed', sales: 2000 },
-  { name: 'Thu', sales: 2780 },
-  { name: 'Fri', sales: 1890 },
-  { name: 'Sat', sales: 2390 },
-  { name: 'Sun', sales: 3490 },
-];
+//  <AreaChart data={revenueData.length ? revenueData : REVENUE_DATA}/>
+
 
 const LOW_STOCK_DATA = [
   { id: 1, name: 'Amul Butter', category: 'Dairy', stock: 5 },
@@ -50,11 +45,35 @@ const CustomTooltip = ({ active, payload, label }) => {
 // --- MAIN COMPONENT ---
 const Dashboard = () => {
   // Using internal data defaults
-  const orderCount = 124;
-  const revenue = 45230;
-  const recentOrders = MOCK_RECENT_ORDERS;
-  
-  const [chartPeriod, setChartPeriod] = useState('Month');
+ const [chartPeriod, setChartPeriod] = useState("month");
+  const [summary, setSummary] = useState({
+    total_orders: 0,
+    total_revenue: 0,
+    pending_orders: 0,
+  });
+  const [revenueData, setRevenueData] = useState([]);
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchDashboard();
+  }, [chartPeriod]);
+
+  const fetchDashboard = async () => {
+    try {
+      setLoading(true);
+      const res = await getDashboardAPI(chartPeriod);
+
+      if (res.data.status === 1) {
+        setSummary(res.data.summary);
+        setRevenueData(res.data.revenue);
+        setRecentOrders(res.data.recent_orders);
+      }
+    } catch (err) {
+      console.error("Dashboard fetch failed", err);
+    } finally {
+      setLoading(false);
+    }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 p-4 md:p-6 animate-in fade-in duration-300">
@@ -98,19 +117,20 @@ const Dashboard = () => {
              
              {/* Period Tabs */}
              <div className="flex bg-slate-100 p-1 rounded-lg self-start sm:self-center">
-                {['Week', 'Month', 'Year'].map((period) => (
-                    <button
-                        key={period}
-                        onClick={() => setChartPeriod(period)}
-                        className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                            chartPeriod === period 
-                            ? 'bg-white text-slate-800 shadow-sm' 
-                            : 'text-slate-500 hover:text-slate-700'
-                        }`}
-                    >
-                        {period}
-                    </button>
-                ))}
+               {["week", "month", "year"].map((period) => (
+  <button
+    key={period}
+    onClick={() => setChartPeriod(period)}
+    className={`px-3 py-1.5 text-xs font-semibold rounded-md ${
+      chartPeriod === period
+        ? "bg-white text-slate-800 shadow-sm"
+        : "text-slate-500"
+    }`}
+  >
+    {period.toUpperCase()}
+  </button>
+))}
+
              </div>
           </div>
 
@@ -212,26 +232,24 @@ const Dashboard = () => {
                 <th className="px-6 py-4 text-center">Rating</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
-              {recentOrders.map(order => (
-                <tr key={order.id} className="hover:bg-slate-50/80 transition-colors cursor-pointer group">
-                  <td className="px-6 py-4 font-bold text-slate-700 group-hover:text-blue-600 transition-colors">{order.id}</td>
-                  <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 border border-slate-200">
-                              {order.customer.charAt(0)}
-                          </div>
-                          <span className="font-semibold text-slate-700">{order.customer}</span>
-                      </div>
-                  </td>
-                  <td className="px-6 py-4 text-slate-500 text-sm font-medium">{order.items} items</td>
-                  <td className="px-6 py-4 font-bold text-slate-800">{order.amount}</td>
-                  <td className="px-6 py-4"><StatusBadge status={order.status} /></td>
-                  <td className="px-6 py-4 text-sm text-slate-500 font-medium">{order.deliveryTime}</td>
-                  <td className="px-6 py-4 flex justify-center"><RatingStars rating={order.rating} /></td>
-                </tr>
-              ))}
-            </tbody>
+            <tbody>
+  {recentOrders.map((order, i) => (
+    <tr key={i}>
+      <td className="px-6 py-4 font-bold">{order.order_no}</td>
+      <td className="px-6 py-4">—</td>
+      <td className="px-6 py-4">—</td>
+      <td className="px-6 py-4 font-bold">
+        ₹{Number(order.total_amount).toLocaleString()}
+      </td>
+      <td className="px-6 py-4">
+        <StatusBadge status={order.order_status} />
+      </td>
+      <td className="px-6 py-4">{order.time}</td>
+      <td className="px-6 py-4 text-center">—</td>
+    </tr>
+  ))}
+</tbody>
+
           </table>
         </div>
 
@@ -268,5 +286,5 @@ const Dashboard = () => {
     </div>
   )
 }
-
+}
 export default Dashboard

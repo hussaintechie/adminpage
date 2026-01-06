@@ -465,7 +465,7 @@ useEffect(() => {
                             <div className="flex justify-between items-start mb-3">
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <span className="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition-colors">{order.order_no}</span>
+                                        <span className="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition-colors">OrderID {order.order_id}</span>
                                         <StatusBadge status={order.order_status} />
                                     </div>
                                     <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-1">

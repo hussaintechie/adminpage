@@ -2,7 +2,7 @@ import API from "./api";
 
 // Orders list (pagination)
 export const getOrdersAPI = (page, limit) => {
-  return API.post("product/orderdatas", {
+  return API.post("product/git", {
     limit,
     offset: (page - 1) * limit,
    
@@ -12,7 +12,7 @@ export const getOrdersAPI = (page, limit) => {
 // Single order details
 export const getSingleOrderAPI = (orderId) => {
   return API.post("product/singleorddetail", {
-    orderid: orderId
+    orderid: orderId,
   });
 };
 
@@ -27,14 +27,14 @@ export const markOutForDeliveryAPI = (orderId) => {
 export const verifyDeliveryOTPAPI = (orderId, otp) => {
   return API.post("product/verifyDeliveryOTP", {
     order_id: orderId,
-    otp
+    otp,
   });
 };
 
 // Track order
 export const trackOrderAPI = (orderId) => {
   return API.post("product/trackOrder", {
-    order_id: orderId
+    order_id: orderId,
   });
 };
 export const printInvoiceAPI = (orderId) => {

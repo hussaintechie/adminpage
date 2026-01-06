@@ -7,7 +7,7 @@ export const createCouponAPI = (payload) => {
 
 // 📋 Get all coupons (ADMIN)
 export const getCouponsAPI = () => {
-  return API.get("/coupon/all");
+  return API.get("/coupon/list");
 };
 // ❌ Delete coupon
 export const deleteCouponAPI = (coupon_id) => {

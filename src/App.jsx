@@ -7,9 +7,10 @@ import Customers from './pages/Customers'
 import Drivers from './pages/Drivers'
 import Settings from './pages/Settings'
 import SuperDeals from './pages/SuperDeals'
-
+import useAdminSocket from "./hooks/useAdminSocket";
 
 function App() {
+    useAdminSocket();
   return (
     <BrowserRouter>
       <Routes>

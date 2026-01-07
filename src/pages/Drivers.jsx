@@ -13,11 +13,12 @@ import {
   Upload
 } from 'lucide-react';
 import Pagination from '../components/Pagination'; // 1. Import Pagination
-import { MOCK_DRIVERS } from '../data/mockData';
+import { createDriverAPI, getDriversAPI, deleteDriverAPI } from "../api/driverApi";
+
 
 export default function Drivers() {
   const [view, setView] = useState('list'); // 'list' | 'add'
-  const [drivers, setDrivers] = useState(MOCK_DRIVERS);
+  const [drivers, setDrivers] = useState([]);
   const fileInputRef = useRef(null);
 
   // --- PAGINATION & SEARCH STATE ---
@@ -38,11 +39,14 @@ export default function Drivers() {
   // --- FILTER & PAGINATION LOGIC ---
   
   // 1. Filter based on search
-  const filteredDrivers = drivers.filter(driver => 
-    driver.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    driver.mobile.includes(searchTerm) ||
-    driver.aadhar.includes(searchTerm)
-  );
+ const filteredDrivers = Array.isArray(drivers)
+  ? drivers.filter(driver =>
+      driver.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      driver.mobile?.includes(searchTerm) ||
+      driver.aadhar_no?.includes(searchTerm)
+    )
+  : [];
+
 
   // 2. Slice data for current page
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -50,44 +54,89 @@ export default function Drivers() {
   const currentDrivers = filteredDrivers.slice(indexOfFirstItem, indexOfLastItem);
 
   // 3. Reset to page 1 if search changes
+  
   useEffect(() => {
+    fetchDrivers();
     setCurrentPage(1);
   }, [searchTerm]);
+const fetchDrivers = async () => {
+  try {
+    const res = await getDriversAPI();
+    if (res.data.status === 1 && Array.isArray(res.data.data)) {
+      setDrivers(res.data.data);
+    } else {
+      setDrivers([]);
+    }
+  } catch (error) {
+    console.error("Error fetching drivers:", error);
+    setDrivers([]);
+  }
+};
 
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+  const handleDelete = async (id) => {
+  if (!window.confirm("Delete this driver?")) return;
 
-  const handlePhotoUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setFormData({ ...formData, photo: file, previewUrl: url });
+  try {
+    const res = await deleteDriverAPI(id);
+    if (res.data.status === 1) {
+      fetchDrivers();
     }
-  };
+  } catch (err) {
+    console.error(err);
+  }
+};
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.name || !formData.mobile || !formData.aadhar) {
-      alert("Please fill in all required fields.");
-      return;
-    }
 
-    const newDriver = {
-      id: drivers.length + 1,
-      name: formData.name,
+  // const handlePhotoUpload = (e) => {
+  //   const file = e.target.files[0];
+  //   if (file) {
+  //     const url = URL.createObjectURL(file);
+  //     setFormData({ ...formData, photo: file, previewUrl: url });
+  //   }
+  // };
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!formData.name || !formData.mobile || !formData.aadhar) {
+    alert("Please fill all required fields");
+    return;
+  }
+
+  try {
+    const payload = {
+      full_name: formData.name,
       mobile: formData.mobile,
-      aadhar: formData.aadhar,
+      aadhar_no: formData.aadhar,
       address: formData.address,
-      status: 'Active',
-      photo: formData.previewUrl
     };
 
-    setDrivers([newDriver, ...drivers]);
-    setView('list');
-    setFormData({ name: '', mobile: '', aadhar: '', address: '', photo: null, previewUrl: null });
-  };
+    const res = await createDriverAPI(payload);
+
+    if (res.data.status === 1) {
+      setView("list");
+      setFormData({
+        name: "",
+        mobile: "",
+        aadhar: "",
+        address: "",
+        photo: null,
+        previewUrl: null,
+      });
+      fetchDrivers();
+    } else {
+      alert(res.data.message);
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Failed to create driver");
+  }
+};
+
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 p-4 md:p-6 bg-slate-50 min-h-screen">
@@ -125,10 +174,14 @@ export default function Drivers() {
               <p className="text-sm text-slate-500 mt-1">Enter the details below to register a new delivery partner.</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* <form onSubmit={handleSubmit} className=" w-full p-6 md:p-8 grid grid-cols-2 md:grid-cols-3 gap-8"> */}
+            <form onSubmit={handleSubmit}
+  className="w-full p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8"
+>
+
               
               {/* Left Column: Photo Upload */}
-              <div className="md:col-span-1 space-y-4">
+              {/* <div className="md:col-span-1 space-y-4">
                 <label className="block text-sm font-semibold text-gray-700">Driver Photo</label>
                 <div 
                   onClick={() => fileInputRef.current?.click()}
@@ -163,7 +216,7 @@ export default function Drivers() {
                   />
                 </div>
                 <p className="text-xs text-slate-400 text-center">Supported: JPG, PNG (Max 5MB)</p>
-              </div>
+              </div> */}
 
               {/* Right Column: Text Fields */}
               <div className="md:col-span-2 space-y-6">
@@ -268,15 +321,15 @@ export default function Drivers() {
               <thead className="bg-gray-50 text-slate-500 text-xs uppercase font-semibold">
                 <tr>
                   <th className="px-6 py-4">Driver Details</th>
-                  <th className="px-6 py-4">Verification</th>
+                  <th className="px-6 py-4">Aadhar no</th>
                   <th className="px-6 py-4">Address</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+                  
+                  <th className="px-6 py-4 ">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {currentDrivers.map((driver) => (
-                  <tr key={driver.id} className="hover:bg-slate-50 transition-colors group">
+               {currentDrivers.map((driver) => (
+  <tr key={driver.driver_id} className="hover:bg-slate-50 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center flex-shrink-0 border border-slate-300">
@@ -287,16 +340,16 @@ export default function Drivers() {
                           )}
                         </div>
                         <div>
-                          <div className="font-medium text-gray-900">{driver.name}</div>
+                          <div className="font-medium text-gray-900">{driver.full_name}</div>
                           <div className="text-xs text-slate-500">{driver.mobile}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">
-                        <span className="text-xs text-slate-400 uppercase font-semibold tracking-wider">Aadhar</span>
+                        
                         <span className="text-sm font-mono text-slate-700 bg-slate-100 px-2 py-0.5 rounded w-fit">
-                          {driver.aadhar}
+                          {driver.aadhar_no}
                         </span>
                       </div>
                     </td>
@@ -306,17 +359,15 @@ export default function Drivers() {
                         <span className="truncate">{driver.address}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        driver.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {driver.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                        <Trash2 size={18} />
-                      </button>
+                    
+                    <td className="px-6 py-6 ">
+                     <button
+  onClick={() => handleDelete(driver.driver_id)}
+  className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+>
+  <Trash2 size={18} />
+</button>
+
                     </td>
                   </tr>
                 ))}
@@ -326,33 +377,29 @@ export default function Drivers() {
 
           {/* MOBILE: Card List View (Hidden on Desktop) */}
           <div className="md:hidden divide-y divide-gray-100">
-            {currentDrivers.map((driver) => (
-              <div key={driver.id} className="p-4 bg-white">
+           {currentDrivers.map((driver) => (
+  <div key={driver.driver_id} className="p-4 bg-white">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center flex-shrink-0 border border-slate-300">
                         {driver.photo ? (
-                          <img src={driver.photo} alt={driver.name} className="w-full h-full object-cover" />
+                          <img src={driver.photo} alt={driver.full_name} className="w-full h-full object-cover" />
                         ) : (
                           <User size={24} className="text-slate-400" />
                         )}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">{driver.name}</h3>
+                      <h3 className="font-semibold text-gray-900">{driver.full_name}</h3>
                       <p className="text-sm text-slate-500">{driver.mobile}</p>
                     </div>
                   </div>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    driver.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {driver.status}
-                  </span>
+                  
                 </div>
 
                 <div className="space-y-3 pl-1">
                   <div className="flex items-center gap-3 text-sm">
                     <FileText size={16} className="text-slate-400" />
-                    <span className="font-mono bg-slate-50 px-2 py-0.5 rounded text-slate-700">{driver.aadhar}</span>
+                    <span className="font-mono bg-slate-50 px-2 py-0.5 rounded text-slate-700">{driver.aadhar_no}</span>
                   </div>
                   <div className="flex items-start gap-3 text-sm">
                     <MapPin size={16} className="text-slate-400 mt-0.5 flex-shrink-0" />
@@ -361,7 +408,9 @@ export default function Drivers() {
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-slate-50 flex justify-end">
-                   <button className="text-sm font-medium text-red-500 flex items-center gap-2 px-3 py-1.5 hover:bg-red-50 rounded-lg transition-colors">
+                   <button 
+                    onClick={() => handleDelete(driver.driver_id)}
+                   className="text-sm font-medium text-red-500 flex items-center gap-2 px-3 py-1.5 hover:bg-red-50 rounded-lg transition-colors">
                      <Trash2 size={16} /> Remove Driver
                    </button>
                 </div>

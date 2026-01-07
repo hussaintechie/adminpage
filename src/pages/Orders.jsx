@@ -7,7 +7,7 @@ import {
   markOutForDeliveryAPI,
   printInvoiceAPI
 } from "../api/orders"
-import { io } from "socket.io-client";
+
 
 
 import { 
@@ -15,13 +15,8 @@ import {
   ChevronRight, Package, User, X, Check, ChevronDown, FileText, Truck, Image as ImageIcon, CreditCard, RefreshCcw
 } from 'lucide-react'
 
-const playNewOrderSound = () => {
-  const audio = new Audio("/sounds/sound.aac");
-  audio.volume = 0.7;
-  audio.play().catch(() => {
-    // browser may block autoplay – safe ignore
-  });
-};
+
+
 
 const formatDeliverySlot = (startStr, endStr) => {
   if (!startStr) return "-";
@@ -55,30 +50,15 @@ const formatDeliverySlot = (startStr, endStr) => {
 
 export default function Orders() {
  
-const orderSoundRef = useRef(null);
 
-useEffect(() => {
-  orderSoundRef.current = new Audio("/sounds/sound.aac");
-  orderSoundRef.current.volume = 0;
 
-  const unlock = () => {
-    orderSoundRef.current.play().catch(() => {});
-    window.removeEventListener("click", unlock);
-  };
+  
 
-  window.addEventListener("click", unlock);
-}, []);
 
-const playNewOrderSound = () => {
-  if (!orderSoundRef.current) return;
 
-  orderSoundRef.current.volume = 0.7;
-  orderSoundRef.current.currentTime = 0;
-  orderSoundRef.current.play();
-};
     const [orderDetails, setOrderDetails] = useState(null);
     const [detailsLoading, setDetailsLoading] = useState(false);
-  const[prevTotalOrders,setPrevTotalOrders  ]= useState(0);
+  
   const [selectedOrderId, setSelectedOrderId] = useState(null)
   const [orders, setOrders] = useState([]);
   const [totalOrders, setTotalOrders] = useState(0);
@@ -194,13 +174,7 @@ const playNewOrderSound = () => {
     fetchorders();
   },[currentPage]) // Fetch when page changes
 
-  useEffect(() => {
-    fetchorders();
-    const interval = setInterval(() => {
-      fetchorders();
-    }, 15000); 
-    return () => clearInterval(interval);
-  }, []);
+  
 
   const fetchorders = async () => {
     try {
@@ -209,10 +183,8 @@ const playNewOrderSound = () => {
 
       if (res.data.status === 1) {
         const newTotal = res.data.total; 
-        if (prevTotalOrders > 0 && newTotal > prevTotalOrders) {
-          playNewOrderSound();
-        }
-        setPrevTotalOrders(newTotal);
+        
+       
         setOrders(
           res.data.data.map(o => ({
             id: o.order_id,
@@ -247,26 +219,32 @@ const playNewOrderSound = () => {
       const apiData = res.data.data;
 
       setOrderDetails({
-        id: `#ORD-${orderId}`,
-        status: "Pending",
-        date: apiData.paydetails.pay_date,
-        time: "",
-        summary: {
-          total: apiData.billdetails.total_amount,
-        },
-        customer: {
-          name: apiData.customer.name,
-          phone: apiData.customer.phone,
-          address: apiData.address,
-        },
-        items: apiData.itmdetails.map((itm, idx) => ({
-          id: idx + 1,
-          name: itm.itmname,
-          price: itm.itmamt,
-          qty: itm.qty,
-          total: itm.itmamt * itm.qty,
-        })),
-      });
+  id: `#ORD-${orderId}`,
+  status: "Pending",
+  date: apiData.paydetails.pay_date,
+  time: "",
+  summary: {
+    itemTotal: apiData.billdetails.item_total,
+    handlingFee: apiData.billdetails.handling_fee,
+    deliveryFee: apiData.billdetails.delivery_fee,
+    discount: apiData.billdetails.discount,
+    total: apiData.billdetails.total_amount,
+    couponCode: apiData.billdetails.coupon_code,
+  },
+  customer: {
+    name: apiData.customer.name,
+    phone: apiData.customer.phone,
+    address: apiData.address,
+  },
+  items: apiData.itmdetails.map((itm, idx) => ({
+    id: idx + 1,
+    name: itm.itmname,
+    price: itm.price,
+    qty: itm.qty,
+    total: itm.total 
+  })),
+});
+
 
       setSelectedOrderId(orderId);
 
@@ -300,17 +278,60 @@ const playNewOrderSound = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4 md:mt-0">
             <div className="lg:col-span-2 space-y-6">
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                    <div className="flex justify-between items-start">
+           
+                <div className="bg-gradient-to-br from-white to-slate-50 p-6 rounded-2xl shadow-lg">
+                  
+
+                  
+                      
                         <div>
                             <h2 className="font-bold text-xl text-slate-800 mb-1">{orderDetails.id}</h2>
-                            <p className="text-sm text-slate-500 flex items-center gap-2"><Calendar size={14} /> {orderDetails.date} • {orderDetails.time}</p>
+                            <p className="text-sm text-slate-500 flex items-center gap-2"><Calendar size={14} /> {orderDetails.date}  {orderDetails.time}</p>
                         </div>
-                        <div className="text-right">
-                             <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Total</p>
-                             <p className="text-2xl font-bold text-emerald-600">₹{orderDetails.summary.total}</p>
-                        </div>
-                    </div>
+                       
+   <div className="space-y-3">
+
+
+  {/* ITEM TOTAL */}
+  <div className="flex justify-between items-center text-sm text-slate-600">
+    <span>Item Total</span>
+    <span className="font-semibold text-slate-800">₹{orderDetails.summary.itemTotal}</span>
+  </div>
+
+  {/* HANDLING */}
+  <div className="flex justify-between items-center text-sm text-slate-600">
+    <span>Handling Fee</span>
+    <span className="font-semibold text-slate-800">₹{orderDetails.summary.handlingFee}</span>
+  </div>
+
+  {/* DELIVERY */}
+  <div className="flex justify-between items-center text-sm text-slate-600">
+    <span>Delivery Fee</span>
+    <span className="font-semibold text-slate-800">₹{orderDetails.summary.deliveryFee}</span>
+  </div>
+
+  {/* COUPON */}
+  {orderDetails.summary.discount > 0 && (
+    <div className="flex justify-between items-center bg-green-50 border border-green-200 px-3 py-2 rounded-lg text-green-700 text-sm font-medium">
+      <span className="flex items-center gap-1">
+        🎉 {orderDetails.summary.couponCode || "COUPON"}
+      </span>
+      <span>-₹{orderDetails.summary.discount}</span>
+    </div>
+  )}
+
+  {/* Divider */}
+  <div className="h-px bg-slate-200 my-3"></div>
+
+  {/* TOTAL */}
+  <div className="flex justify-between items-center text-lg font-bold text-slate-900">
+    <span>Total</span>
+    <span className="text-emerald-600">₹{orderDetails.summary.total}</span>
+  </div>
+</div>
+
+
+                    
                 </div>
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                     <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 font-semibold text-slate-700 flex items-center gap-2">

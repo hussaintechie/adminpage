@@ -8,6 +8,7 @@ export default function Settings() {
   code: '',
   discount_type: 'PERCENT', // 🔥 default
   discount: '',
+  min_order: '',
   expiry: ''
 });
 
@@ -51,11 +52,12 @@ if (
 
   try {
     const payload = {
-      coupon_code: couponForm.code.toUpperCase(),
-      discount_type: couponForm.discount_type,
-      discount_value: Number(couponForm.discount),
-      expiry_date: couponForm.expiry || null
-    };
+  coupon_code: couponForm.code.toUpperCase(),
+  discount_type: couponForm.discount_type,
+  discount_value: Number(couponForm.discount),
+  min_order_value: Number(couponForm.min_order) || 0,
+  expiry_date: couponForm.expiry || null
+};
 
     const res = await createCouponAPI(payload);
 
@@ -170,6 +172,16 @@ const removeCoupon = async (coupon_id) => {
                focus:border-green-500 text-sm"
   />
 </div>
+<input 
+  type="number"
+  name="min_order"
+  value={couponForm.min_order}
+  onChange={handleCouponInput}
+  placeholder="Minimum order value (₹)"
+  className="w-full border border-gray-300 rounded-xl p-2.5
+             outline-none focus:ring-2 focus:ring-green-100
+             focus:border-green-500 text-sm"
+/>
 
 <input 
   type="date"
@@ -200,13 +212,15 @@ const removeCoupon = async (coupon_id) => {
       </p>
 
       <p className="text-[10px] text-green-600">
-        Get{" "}
-        {c.discount_type === "PERCENT"
-          ? `${c.discount_value}%`
-          : `₹${c.discount_value}`
-        } OFF
-        {c.expiry_date && ` • Exp: ${c.expiry_date}`}
-      </p>
+  Get{" "}
+  {c.discount_type === "PERCENT"
+    ? `${c.discount_value}%`
+    : `₹${c.discount_value}`
+  } OFF
+  {c.min_order_value > 0 && ` on orders above ₹${c.min_order_value}`}
+  {c.expiry_date && ` • Exp: ${c.expiry_date}`}
+</p>
+
     </div>
 
     {/* 🗑 DELETE */}

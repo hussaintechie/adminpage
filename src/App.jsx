@@ -9,8 +9,10 @@ import Settings from './pages/Settings'
 import SuperDeals from './pages/SuperDeals'
 import { Toaster } from "react-hot-toast";
 
+import useAdminSocket from "./hooks/useAdminSocket";
 
 function App() {
+    useAdminSocket();
   return (
     <BrowserRouter>
     

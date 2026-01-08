@@ -2,7 +2,7 @@ import API from "./api";
 
 // Orders list (pagination)
 export const getOrdersAPI = (page, limit) => {
-  return API.post("product/git", {
+  return API.post("order/getuserorders", {
     limit,
     offset: (page - 1) * limit,
    
@@ -11,7 +11,7 @@ export const getOrdersAPI = (page, limit) => {
 
 // Single order details
 export const getSingleOrderAPI = (orderId) => {
-  return API.post("product/singleorddetail", {
+  return API.post("order/singleorddetail", {
     orderid: orderId,
   });
 };

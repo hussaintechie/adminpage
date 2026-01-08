@@ -13,8 +13,8 @@ import Pagination from "../components/purchsepagenation";
 
 /* ---------------- CONSTANTS ---------------- */
 const LIMIT = 10;
-const LIST_API = "http://localhost:5000/product/purchaselist";
-const CANCEL_API = "http://localhost:5000/product/cancelPurchase";
+const LIST_API = "https://api.sribalajistores.com/product/purchaselist";
+const CANCEL_API = "https://api.sribalajistores.com/product/cancelPurchase";
 
 
 /* ---------------- MAIN COMPONENT ---------------- */

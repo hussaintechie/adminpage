@@ -61,7 +61,7 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
     const fetchCategories = async () => {
         try {
             const res = await axios.post(
-                "http://localhost:5000/product/allcatedetails",
+                "https://api.sribalajistores.com/product/allcatedetails",
                 {
                     mode_fetchorall: 0,
                     cate_id: 0,
@@ -81,7 +81,7 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
     };
     const fetchUnitlist = async () => {
         try {
-            const res = await axios.post("http://localhost:5000/product/unitlist");
+            const res = await axios.post("https://api.sribalajistores.com/product/unitlist");
 
             if (res.data.status === 1) {
                 setUnitlist(

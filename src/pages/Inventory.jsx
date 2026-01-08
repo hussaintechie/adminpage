@@ -120,7 +120,7 @@ const BulkUpload = ({ onCancel }) => {
       formData.append("file", file);
 
       const res = await axios.post(
-        "http://localhost:5000/product/createitmfile",
+        "https://api.sribalajistores.com/product/createitmfile",
         formData,
         {
           headers: {

@@ -49,8 +49,8 @@ const Dashboard = () => {
   const [revenueData, setRevenuedata] = useState([]);
   const [lowstockData, setLowstockstkdata] = useState([]);
   const [revenutotal, setTotalrevenue] = useState(0);
-  const API_URL = "http://localhost:5000/product/getDashboardDatas";
-  const Chartapi_URL = "http://localhost:5000/product/getChartdetails";
+  const API_URL = "https://api.sribalajistores.com/product/getDashboardDatas";
+  const Chartapi_URL = "https://api.sribalajistores.com/product/getChartdetails";
 
   const calculateTrend = (today, yesterday) => {
     if (!yesterday || yesterday === 0) return 0;

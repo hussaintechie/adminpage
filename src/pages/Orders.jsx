@@ -288,7 +288,7 @@ const list = [
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4 md:mt-0">
             <div className="lg:col-span-2 space-y-6">
            
-                <div className="bg-gradient-to-br from-white to-slate-50 p-6 rounded-2xl shadow-lg">
+                <div className="bg-linear-to-br from-white to-slate-50 p-6 rounded-2xl shadow-lg">
                   
 
                   
@@ -634,7 +634,7 @@ const list = [
                     </div>
                     <div className="flex gap-3 pt-4">
                         <button onClick={clearFilters} disabled={loading} className="flex-1 py-3 text-red-500 font-bold bg-red-50 rounded-xl disabled:opacity-50">Reset</button>
-                        <button disabled={loading} onClick={() => setIsFilterOpen(false)} className="flex-[2] py-3 text-white font-bold bg-emerald-600 rounded-xl shadow-lg shadow-emerald-200 disabled:opacity-50">Apply Filters</button>
+                        <button disabled={loading} onClick={() => setIsFilterOpen(false)} className="  py-3 text-white font-bold bg-emerald-600 rounded-xl shadow-lg shadow-emerald-200 disabled:opacity-50">Apply Filters</button>
                     </div>
                 </div>
             </div>

@@ -6,7 +6,7 @@ import Inventory from './pages/Inventory'
 import Customers from './pages/Customers'
 import Drivers from './pages/Drivers'
 import Settings from './pages/Settings'
-import SuperDeals from './pages/SuperDeals'
+// import SuperDeals from './pages/SuperDeals'
 import { Toaster } from "react-hot-toast";
 import useAdminSocket from './hooks/useAdminSocket';
 
@@ -32,7 +32,7 @@ function App() {
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/drivers" element={<Drivers />} />
-          <Route path="superdeals" element={<SuperDeals/>}/>
+          {/* <Route path="superdeals" element={<SuperDeals/>}/> */}
           <Route path="/settings" element={<Settings />} />
           
         </Route>

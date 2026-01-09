@@ -406,8 +406,10 @@ const Dashboard = () => {
       <div className="space-y-4">
         <div className="flex justify-between items-center px-1">
           <h3 className="text-lg font-bold text-slate-800">Recent Orders</h3>
-          <button className="flex items-center text-sm text-emerald-600 font-bold hover:text-emerald-700 group">
-            View All Orders{" "}
+          <button 
+          onClick={()=>navigate("/orders")}
+          className="flex items-center text-sm text-emerald-600 font-bold hover:text-emerald-700 group">
+            View All Orders
             <ChevronRight
               size={16}
               className="ml-0.5 group-hover:translate-x-1 transition-transform"
@@ -432,7 +434,7 @@ const Dashboard = () => {
             <tbody className="divide-y divide-slate-50">
               {recentOrders.map((order) => (
                 <tr key={order.order_id}>
-                  <td className="px-6 py-4 font-bold">{order.order_no}</td>
+                  <td className="px-6 py-4 font-bold">{order.order_id}</td>
 
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -475,7 +477,7 @@ const Dashboard = () => {
     <div className="flex justify-between">
       <div>
         <span className="text-xs font-bold text-slate-400">
-          #{order.order_no}
+          #{order.order_id}
         </span>
         <div className="font-bold text-lg">
           ₹{order.total_amount}
@@ -501,9 +503,7 @@ const Dashboard = () => {
 
     <div className="mt-3 flex justify-between items-center">
       <RatingStars rating={order.rating || 0} />
-      <button className="text-sm font-bold text-blue-600">
-        Details →
-      </button>
+     
     </div>
   </div>
 ))}

@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Zap, Clock, Search, Trash2, Plus, ArrowRight, Tag } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Zap, Clock, Search, Trash2, Plus, ArrowRight, Tag, Percent, Calculator } from 'lucide-react'
 
 // Dummy Data for Product Inventory
 const INVENTORY_DATA = [
@@ -19,13 +19,59 @@ export default function SuperDeals() {
 
   // State for the "Add Deal" Modal/Form
   const [selectedProduct, setSelectedProduct] = useState(null)
-  const [dealConfig, setDealConfig] = useState({ offerPrice: '', endTime: '' })
+  
+  // Added discountPercent to state to track the percentage input
+  const [dealConfig, setDealConfig] = useState({ 
+    offerPrice: '', 
+    discountPercent: '', 
+    endTime: '' 
+  })
 
   // --- Handlers ---
 
   const handleSelectProduct = (product) => {
     setSelectedProduct(product)
-    setDealConfig({ offerPrice: '', endTime: '' }) // Reset form
+    setDealConfig({ offerPrice: '', discountPercent: '', endTime: '' }) // Reset form
+  }
+
+  // LOGIC: Calculate Percentage when Price is typed
+  const handlePriceChange = (e) => {
+    const price = e.target.value;
+    
+    if (price === '') {
+        setDealConfig(prev => ({ ...prev, offerPrice: '', discountPercent: '' }));
+        return;
+    }
+
+    if (parseFloat(price) > selectedProduct.price) return; // Prevent price higher than original
+
+    const percent = ((selectedProduct.price - price) / selectedProduct.price) * 100;
+    
+    setDealConfig(prev => ({ 
+        ...prev, 
+        offerPrice: price, 
+        discountPercent: percent.toFixed(0) // Round to whole number
+    }));
+  }
+
+  // LOGIC: Calculate Price when Percentage is typed
+  const handlePercentChange = (e) => {
+    const percent = e.target.value;
+    
+    if (percent === '') {
+        setDealConfig(prev => ({ ...prev, offerPrice: '', discountPercent: '' }));
+        return;
+    }
+
+    if (parseFloat(percent) > 100) return; // Prevent > 100%
+
+    const price = selectedProduct.price - (selectedProduct.price * (percent / 100));
+    
+    setDealConfig(prev => ({ 
+        ...prev, 
+        offerPrice: Math.round(price), // Round price to avoid decimals
+        discountPercent: percent
+    }));
   }
 
   const handleAddDeal = () => {
@@ -54,7 +100,6 @@ export default function SuperDeals() {
     }
   }
 
-  // Filter inventory based on search
   const filteredInventory = INVENTORY_DATA.filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     p.id.toLowerCase().includes(searchTerm.toLowerCase())
@@ -78,7 +123,7 @@ export default function SuperDeals() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-180px)] min-h-[600px]">
         
-        {/* LEFT COLUMN: PRODUCT INVENTORY (List of all products) */}
+        {/* LEFT COLUMN: PRODUCT INVENTORY */}
         <div className="lg:col-span-5 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="p-4 border-b border-gray-100 bg-gray-50">
                 <h2 className="font-bold text-gray-700 mb-3">1. Select Product</h2>
@@ -117,31 +162,60 @@ export default function SuperDeals() {
             </div>
         </div>
 
-        {/* MIDDLE COLUMN: CONFIGURATION (Only shows when product selected) */}
+        {/* MIDDLE COLUMN: CONFIGURATION (Calculations Here) */}
         <div className="lg:col-span-3 flex flex-col gap-4">
              {selectedProduct ? (
                  <div className="bg-white p-5 rounded-2xl shadow-lg border border-orange-100 animate-in zoom-in duration-200">
                     <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        Configure Deal <span className="text-xs font-normal text-gray-400">for {selectedProduct.name}</span>
+                        Configure Deal
                     </h2>
 
                     <div className="space-y-4">
-                        <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Original Price</label>
-                            <input disabled value={selectedProduct.price} className="w-full bg-gray-100 border border-gray-200 rounded-lg p-2 text-gray-500 font-mono text-sm" />
+                        {/* Original Price Read-only */}
+                        <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex justify-between items-center">
+                            <span className="text-xs font-bold text-gray-500 uppercase">Original Price</span>
+                            <span className="text-lg font-bold text-gray-800">₹{selectedProduct.price}</span>
                         </div>
                         
-                        <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Deal Price (₹)</label>
-                            <input 
-                                type="number" 
-                                autoFocus
-                                value={dealConfig.offerPrice}
-                                onChange={(e) => setDealConfig({...dealConfig, offerPrice: e.target.value})}
-                                placeholder="Enter Offer Price"
-                                className="w-full border-2 border-orange-100 focus:border-orange-500 rounded-lg p-2 font-bold text-gray-800 outline-none transition-colors"
-                            />
+                        {/* Calculation Grid */}
+                        <div className="grid grid-cols-2 gap-3">
+                             {/* Deal Price Input */}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Deal Price (₹)</label>
+                                <div className="relative">
+                                    <input 
+                                        type="number" 
+                                        autoFocus
+                                        value={dealConfig.offerPrice}
+                                        onChange={handlePriceChange}
+                                        placeholder="0"
+                                        className="w-full border-2 border-orange-100 focus:border-orange-500 rounded-lg p-2 font-bold text-gray-800 outline-none transition-colors"
+                                    />
+                                </div>
+                            </div>
+                             {/* Discount Percent Input */}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Discount %</label>
+                                <div className="relative">
+                                    <Percent className="absolute right-3 top-2.5 text-gray-400" size={14}/>
+                                    <input 
+                                        type="number" 
+                                        value={dealConfig.discountPercent}
+                                        onChange={handlePercentChange}
+                                        placeholder="0"
+                                        className="w-full border border-gray-300 focus:border-orange-500 rounded-lg p-2 font-medium text-gray-600 outline-none transition-colors"
+                                    />
+                                </div>
+                            </div>
                         </div>
+
+                        {/* Calculation Summary Badge */}
+                        {dealConfig.offerPrice && (
+                            <div className="bg-green-50 text-green-700 p-2 rounded-lg text-xs font-bold text-center border border-green-200 flex items-center justify-center gap-2">
+                                <Calculator size={14} />
+                                Customer saves ₹{selectedProduct.price - dealConfig.offerPrice} ({dealConfig.discountPercent}% OFF)
+                            </div>
+                        )}
 
                         <div>
                             <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Deal End Time</label>
@@ -174,7 +248,7 @@ export default function SuperDeals() {
              ) : (
                  <div className="h-full flex flex-col items-center justify-center text-gray-300 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50 p-6 text-center">
                      <ArrowRight size={40} className="mb-2 opacity-20"/>
-                     <p className="text-sm font-medium">Select a product from the left list to configure a deal.</p>
+                     <p className="text-sm font-medium">Select a product to configure deal.</p>
                  </div>
              )}
         </div>
@@ -193,9 +267,7 @@ export default function SuperDeals() {
 
                 {activeDeals.map(deal => (
                     <div key={deal.id} className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
-                        {/* Progress Bar Visual (Dummy) */}
                         <div className="absolute top-0 left-0 h-1 bg-orange-500 w-2/3"></div>
-
                         <div className="flex gap-3">
                             <div className="w-14 h-14 bg-gray-50 rounded-lg flex items-center justify-center text-2xl border border-gray-100">
                                 {deal.image}
@@ -214,7 +286,6 @@ export default function SuperDeals() {
                             <button 
                                 onClick={() => handleRemoveDeal(deal.id)}
                                 className="self-start text-gray-300 hover:text-red-500 p-1 rounded-md hover:bg-red-50 transition-colors"
-                                title="End Deal"
                             >
                                 <Trash2 size={16}/>
                             </button>

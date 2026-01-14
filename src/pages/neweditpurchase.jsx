@@ -13,10 +13,10 @@ import { Plus, Trash2 } from "lucide-react";
 
 
 
-const EDIT_API = "http://localhost:5000/product/getPurchaseEditData";
-const SAVE_API = "http://localhost:5000/product/submitpurchase";
-const DELETE_ITEM_API = "http://localhost:5000/product/cancelPurchaseItem";
-const ITEMOption_API = "http://localhost:5000/product/Optionitems";
+const EDIT_API = "https://api.sribalajistores.com/product/getPurchaseEditData";
+const SAVE_API = "https://api.sribalajistores.com/product/submitpurchase";
+const DELETE_ITEM_API = "https://api.sribalajistores.com/product/cancelPurchaseItem";
+const ITEMOption_API = "https://api.sribalajistores.com/product/Optionitems";
 
 /* ---------------- MAIN ---------------- */
 const AddEditPurchase = ({ editData, onCancel, onSaved }) => {

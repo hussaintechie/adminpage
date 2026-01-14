@@ -19,7 +19,7 @@ const LowStockView = () => {
       setLoading(true);
 
       const res = await axios.post(
-        "http://localhost:5000/product/Lowstockdetails",
+        "https://api.sribalajistores.com/product/Lowstockdetails",
         {
           page: currentPage,
           limit: ITEMS_PER_PAGE,

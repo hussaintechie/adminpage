@@ -10,7 +10,7 @@ import Pagination from "../components/purchsepagenation";
 import ManualAddForm from "../pages/ManualAddForm";
 
 const ITEMS_PER_PAGE = 15;
-const API_URL = "http://localhost:5000/product";
+const API_URL = "https://api.sribalajistores.com/product";
 
 export default function Inventory() {
   const [items, setItems] = useState([]);

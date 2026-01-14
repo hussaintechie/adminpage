@@ -8,8 +8,7 @@ import Drivers from './pages/Drivers'
 import Settings from './pages/Settings'
 import SuperDeals from './pages/SuperDeals'
 import { Toaster } from "react-hot-toast";
-
-import useAdminSocket from "./hooks/useAdminSocket";
+import useAdminSocket from './hooks/useAdminSocket';
 
 function App() {
     useAdminSocket();

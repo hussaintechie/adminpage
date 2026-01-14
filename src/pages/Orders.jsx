@@ -176,36 +176,45 @@ export default function Orders() {
 
   
 
-  const fetchorders = async () => {
-    try {
-      setLoading(true);
-      const res = await getOrdersAPI(currentPage, itemsPerPage);
+ const fetchorders = async () => {
+  try {
+    setLoading(true);
+    const res = await getOrdersAPI(currentPage, itemsPerPage);
 
-      if (res.data.status === 1) {
-        const newTotal = res.data.total; 
-        
-       
-        setOrders(
-          res.data.data.map(o => ({
-            id: o.order_id,
-            orderNo: o.order_no,
-            amount: `₹${o.total_amount}`,
-            status: o.order_status,
-            phone: o.phone,
-            customer: o.name,
-            deliveryStart: o.delivery_start,
-            deliveryEnd: o.delivery_end,
-            items: Number(o.item_count) || 0,
-          }))
-        );
-        setTotalOrders(newTotal); // Set total count for pagination
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+    console.log("ORDERS API 👉", res.data);
+
+    if (res.data.status === 1) {
+      const { processed = [], delivered = [], cancelled = [] } = res.data.data;
+
+const list = [
+  ...processed,
+  ...delivered,
+  ...cancelled,
+];
+
+
+      setOrders(
+        list.map(o => ({
+          id: o.order_id,
+          orderNo: o.order_no,
+          amount: `₹${o.total_amount}`,
+          status: o.order_status,
+          phone: o.phone,
+          customer: o.name, // ⚠️ API does not return name
+          deliveryStart: o.delivery_start,
+          deliveryEnd: o.delivery_end,
+          items: Number(o.item_count) || 0,
+        }))
+      );
+
+      setTotalOrders(list.length); // backend not sending total
     }
-  };
+  } catch (err) {
+    console.error("Fetch orders failed", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleViewOrder = async (orderId) => {
     try {
@@ -232,8 +241,8 @@ export default function Orders() {
     couponCode: apiData.billdetails.coupon_code,
   },
   customer: {
-    name: apiData.customer.name,
-    phone: apiData.customer.phone,
+    name: apiData.customer.name || "guest",
+    phone: apiData.customer.phone ||"-",
     address: apiData.address,
   },
   items: apiData.itmdetails.map((itm, idx) => ({
@@ -279,7 +288,7 @@ export default function Orders() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4 md:mt-0">
             <div className="lg:col-span-2 space-y-6">
            
-                <div className="bg-gradient-to-br from-white to-slate-50 p-6 rounded-2xl shadow-lg">
+                <div className="bg-linear-to-br from-white to-slate-50 p-6 rounded-2xl shadow-lg">
                   
 
                   
@@ -625,7 +634,7 @@ export default function Orders() {
                     </div>
                     <div className="flex gap-3 pt-4">
                         <button onClick={clearFilters} disabled={loading} className="flex-1 py-3 text-red-500 font-bold bg-red-50 rounded-xl disabled:opacity-50">Reset</button>
-                        <button disabled={loading} onClick={() => setIsFilterOpen(false)} className="flex-[2] py-3 text-white font-bold bg-emerald-600 rounded-xl shadow-lg shadow-emerald-200 disabled:opacity-50">Apply Filters</button>
+                        <button disabled={loading} onClick={() => setIsFilterOpen(false)} className="  py-3 text-white font-bold bg-emerald-600 rounded-xl shadow-lg shadow-emerald-200 disabled:opacity-50">Apply Filters</button>
                     </div>
                 </div>
             </div>

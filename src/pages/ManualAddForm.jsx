@@ -70,7 +70,7 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
 
     const fetchCategories = async () => {
         const res = await axios.post(
-            "http://localhost:5000/product/allcatedetails",
+            "https://api.sribalajistores.com/product/allcatedetails",
             { mode_fetchorall: 0, cate_id: 0 }
         );
         if (res.data.status === 1) {
@@ -84,7 +84,7 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
     };
 
     const fetchUnitlist = async () => {
-        const res = await axios.post("http://localhost:5000/product/unitlist");
+        const res = await axios.post("https://api.sribalajistores.com/product/unitlist");
         if (res.data.status === 1) {
             setUnitlist(
                 res.data.data.map((u) => ({
@@ -151,7 +151,7 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
             };
 
             const res = await axios.post(
-                "http://localhost:5000/product/saveItem",
+                "https://api.sribalajistores.com/product/saveItem",
                 payload
             );
 

@@ -214,7 +214,7 @@ useEffect(() => {
                 <tr key={customer.id} className="group hover:bg-slate-50/80 transition-colors cursor-pointer" onClick={() => setSelectedCustomer(customer)}>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center text-blue-600 font-bold text-sm shadow-sm border border-blue-100 transition-transform group-hover:scale-105">
+                      <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-50 to-indigo-100 flex items-center justify-center text-blue-600 font-bold text-sm shadow-sm border border-blue-100 transition-transform group-hover:scale-105">
                         {customer.name.charAt(0)}
                       </div>
                       <div>
@@ -253,7 +253,7 @@ useEffect(() => {
           >
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center text-blue-600 font-bold text-lg shadow-sm border border-blue-100">
+                  <div className="w-12 h-12 rounded-full bg-linear-to-br from-blue-50 to-indigo-100 flex items-center justify-center text-blue-600 font-bold text-lg shadow-sm border border-blue-100">
                     {customer.name.charAt(0)}
                   </div>
                   <div>
@@ -381,7 +381,7 @@ useEffect(() => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="flex flex-col gap-4">
                     <div className="flex items-center gap-5">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center text-blue-600 text-2xl font-bold shadow-inner shrink-0">
+                        <div className="w-16 h-16 rounded-full bg-linear-to-br from-blue-100 to-indigo-100 flex items-center justify-center text-blue-600 text-2xl font-bold shadow-inner shrink-0">
                         {selectedCustomer.name.charAt(0)}
                         </div>
                         <div>

@@ -5,9 +5,13 @@ import { useState } from 'react'
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false)
   const location = useLocation()
-
+const handleremove = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  navigate("/", { replace: true });
+};
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/Dashboard' },
     { icon: ShoppingBasket, label: 'Orders', path: '/orders' },
     { icon: Package, label: 'Inventory', path: '/inventory' },
     { icon: Users, label: 'Customers', path: '/customers' },
@@ -106,10 +110,11 @@ export default function Sidebar() {
               </div>
               <div className="overflow-hidden">
                 <p className="text-sm font-bold text-slate-700 truncate">Admin User</p>
-                <p className="text-xs text-slate-500 truncate">admin@sbgrocers.com</p>
-              </div>
+                </div>
             </div>
-            <button className="text-slate-400 hover:text-red-500 transition-colors">
+            <button 
+              onClick={handleremove}
+            className="text-slate-400 hover:text-red-500 transition-colors">
               <LogOut size={18} />
             </button>
           </div>

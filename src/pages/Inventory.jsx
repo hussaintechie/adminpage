@@ -21,6 +21,7 @@ import PurchaseController from '../pages/Purchasecontroller';
 import Productlist from '../pages/Productlists';
 import ManualAddForm from '../pages/ManualAddForm';
 import LowStockView from '../pages/Lowstockdetails';
+import Stockreport from '../pages/Stockreport';
 import toast from "react-hot-toast";
 import * as XLSX from "xlsx";
 
@@ -294,6 +295,7 @@ const Inventory = () => {
         {activeTab === 'manual' && <ManualAddForm onSave={handleSaveProduct} onCancel={() => setActiveTab('list')} />}
         {activeTab === 'bulk' && <BulkUpload onCancel={() => setActiveTab('list')} />}
         {activeTab === "inv_list" && <PurchaseController onBack={() => setActiveTab("list")} />}
+        {activeTab === "inv_manage" && <Stockreport onBack={() => setActiveTab("list")} />}
       </div>
     </div>
   );

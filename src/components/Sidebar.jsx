@@ -1,10 +1,12 @@
 import { ShoppingBasket, LayoutDashboard, Package, Users, Truck, Settings, Menu, X, LogOut, Percent, } from 'lucide-react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+
 import { useState } from 'react'
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate() 
 const handleremove = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
@@ -106,17 +108,19 @@ const handleremove = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold shadow-sm border border-white">
-                AD
+                
               </div>
               <div className="overflow-hidden">
                 <p className="text-sm font-bold text-slate-700 truncate">Admin User</p>
                 </div>
             </div>
-            <button 
-              onClick={handleremove}
-            className="text-slate-400 hover:text-red-500 transition-colors">
-              <LogOut size={18} />
-            </button>
+          <button
+  onClick={handleremove}
+  className="text-slate-400 hover:text-red-500 transition-colors"
+>
+  <LogOut size={18} />
+</button>
+
           </div>
         </div>
       </aside>

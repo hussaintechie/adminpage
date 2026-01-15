@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
+import API from "../api/api";
 import { Zap, Clock, Search, Trash2, Plus, ArrowRight, Tag, Percent, Calculator } from 'lucide-react'
 
-const API_URL = "https://api.sribalajistores.com/product/Superdealdata";
+const API_URL = "product/superdealsdata";
 
 export default function SuperDeals() {
 
@@ -24,7 +24,7 @@ export default function SuperDeals() {
         try {
             setLoading(true);
 
-            const res = await axios.post(API_URL);
+            const res = await API.post(API_URL);
 
             if (res.data?.status === 1) {
 
@@ -151,8 +151,8 @@ export default function SuperDeals() {
 
 
     const itemmange = async (itmid, mode, disper = 0) => {
-        return axios.post(
-            "https://api.sribalajistores.com/product/Superdealmanage",
+        return API.post(
+            "product/Superdealmanage",
             {
                 itmid,
                 mode,

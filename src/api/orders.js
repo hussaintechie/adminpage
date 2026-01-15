@@ -45,3 +45,10 @@ export const printInvoiceAPI = (orderId) => {
     }
   );
 };
+
+export const getAdminOrdersAPI = (page, limit) => {
+  return API.post("order/orderdatas", {
+    limit,
+    offset: (page - 1) * limit,
+  });
+};

@@ -2,11 +2,11 @@ import React, { useState, useEffect,useRef  } from 'react'
 import StatusBadge from '../components/StatusBadge'
 import Pagination from '../components/Pagination' // 1. Import Pagination Component
 import {
-  getOrdersAPI,
+  getAdminOrdersAPI,
   getSingleOrderAPI,
   markOutForDeliveryAPI,
   printInvoiceAPI
-} from "../api/orders"
+} from "../api/orders";
 
 
 
@@ -179,42 +179,35 @@ export default function Orders() {
  const fetchorders = async () => {
   try {
     setLoading(true);
-    const res = await getOrdersAPI(currentPage, itemsPerPage);
 
-    console.log("ORDERS API 👉", res.data);
+    const res = await getAdminOrdersAPI(currentPage, itemsPerPage);
+
+    console.log("ADMIN ORDERS API 👉", res.data);
 
     if (res.data.status === 1) {
-      const { processed = [], delivered = [], cancelled = [] } = res.data.data;
-
-const list = [
-  ...processed,
-  ...delivered,
-  ...cancelled,
-];
-
-
       setOrders(
-        list.map(o => ({
+        res.data.data.map(o => ({
           id: o.order_id,
           orderNo: o.order_no,
           amount: `₹${o.total_amount}`,
           status: o.order_status,
-          phone: o.phone,
-          customer: o.name, // ⚠️ API does not return name
+          customer: o.name || "Guest",
+          items: Number(o.item_count) || 0,
           deliveryStart: o.delivery_start,
           deliveryEnd: o.delivery_end,
-          items: Number(o.item_count) || 0,
         }))
       );
 
-      setTotalOrders(list.length); // backend not sending total
+      // ✅ IMPORTANT
+      setTotalOrders(res.data.total);
     }
   } catch (err) {
-    console.error("Fetch orders failed", err);
+    console.error("Admin order fetch failed", err);
   } finally {
     setLoading(false);
   }
 };
+
 
   const handleViewOrder = async (orderId) => {
     try {

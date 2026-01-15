@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../api/api";
 import { AlertTriangle, ImageIcon } from "lucide-react";
 import Pagination from "../components/purchsepagenation";
 
@@ -18,8 +18,8 @@ const LowStockView = () => {
     try {
       setLoading(true);
 
-      const res = await axios.post(
-        "https://api.sribalajistores.com/product/Lowstockdetails",
+      const res = await API.post(
+        "product/Lowstockdetails",
         {
           page: currentPage,
           limit: ITEMS_PER_PAGE,

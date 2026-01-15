@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ImageIcon } from "lucide-react";
 import Select from "react-select";
-import axios from "axios";
+import API from "../api/api";
 import toast from "react-hot-toast";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/material_green.css";
@@ -69,8 +69,8 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
     }, []);
 
     const fetchCategories = async () => {
-        const res = await axios.post(
-            "https://api.sribalajistores.com/product/allcatedetails",
+        const res = await API.post(
+            "product/allcatedetails",
             { mode_fetchorall: 0, cate_id: 0 }
         );
         if (res.data.status === 1) {
@@ -84,7 +84,7 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
     };
 
     const fetchUnitlist = async () => {
-        const res = await axios.post("https://api.sribalajistores.com/product/unitlist");
+        const res = await API.post("product/unitlist");
         if (res.data.status === 1) {
             setUnitlist(
                 res.data.data.map((u) => ({
@@ -150,8 +150,8 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
                 },
             };
 
-            const res = await axios.post(
-                "https://api.sribalajistores.com/product/saveItem",
+            const res = await API.post(
+                "product/saveItem",
                 payload
             );
 

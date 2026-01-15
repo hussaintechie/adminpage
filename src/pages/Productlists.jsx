@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../api/api";
 import {
   Search,
   ImageIcon,
@@ -10,7 +10,7 @@ import Pagination from "../components/purchsepagenation";
 import ManualAddForm from "../pages/ManualAddForm";
 
 const ITEMS_PER_PAGE = 15;
-const API_URL = "https://api.sribalajistores.com/product";
+const API_URL = "product";
 
 export default function Inventory() {
   const [items, setItems] = useState([]);
@@ -26,7 +26,7 @@ export default function Inventory() {
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const res = await axios.post(`${API_URL}/Itemslist`, {
+      const res = await API.post(`${API_URL}/Itemslist`, {
         page: currentPage,
         limit: ITEMS_PER_PAGE,
         search: searchTerm,
@@ -55,7 +55,7 @@ export default function Inventory() {
     if (!window.confirm("Are you sure you want to delete this item?")) return;
 
     try {
-      await axios.post(`${API_URL}/deleteItem`,{id});
+      await API.post(`${API_URL}/deleteItem`,{id});
       fetchItems();
     } catch {
       alert("Delete failed");
@@ -73,10 +73,10 @@ export default function Inventory() {
     try {
       if (product.id) {
         // UPDATE
-        await axios.put(`${API_URL}/updateItem/${product.id}`, product);
+        await API.put(`${API_URL}/updateItem/${product.id}`, product);
       } else {
         // ADD
-        await axios.post(`${API_URL}/addItem`, product);
+        await API.post(`${API_URL}/addItem`, product);
       }
 
       setShowForm(false);

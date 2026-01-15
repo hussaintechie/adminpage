@@ -5,7 +5,7 @@ import RatingStars from "../components/RatingStars";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import Api from "../api/api.js"
 import {
   AreaChart,
   Area,
@@ -98,7 +98,7 @@ const Dashboard = () => {
     const formattedDate = formatDate(selectedDate);
 
     try {
-      const res = await axios.post(API_URL, {
+      const res = await Api.post("product/getDashboardDatas", {
         date: formattedDate,
         chartmode: chartPeriod,
       });
@@ -143,7 +143,7 @@ const Dashboard = () => {
   };
   const handleChartdetails = async () => {
     try {
-      const res = await axios.post(Chartapi_URL, {
+      const res = await Api.post("product/getChartdetails", {
         chartmode: chartPeriod, // "Week" | "Month" | "Year"
       });
 
@@ -172,13 +172,10 @@ const Dashboard = () => {
     }
   };
   const fetchCustomerOrders = async () => {
-    const res = await axios.post(
-      "https://api.sribalajistores.com/order/customer-orders",
-      {
-        limit: 10,
-        page: 1,
-      }
-    );
+    const res = await Api.post("/order/customer-orders", {
+      limit: 10,
+      page: 1,
+    });
 
     if (res.data.status === 1) {
       setOrders(res.data.data);

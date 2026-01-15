@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Select from "react-select";
-import axios from "axios";
+import API from "../api/api";
 import toast from "react-hot-toast";
 import { Plus, Trash2 } from "lucide-react";
 
@@ -13,10 +13,10 @@ import { Plus, Trash2 } from "lucide-react";
 
 
 
-const EDIT_API = "https://api.sribalajistores.com/product/getPurchaseEditData";
-const SAVE_API = "https://api.sribalajistores.com/product/submitpurchase";
-const DELETE_ITEM_API = "https://api.sribalajistores.com/product/cancelPurchaseItem";
-const ITEMOption_API = "https://api.sribalajistores.com/product/Optionitems";
+const EDIT_API = "product/getPurchaseEditData";
+const SAVE_API = "product/submitpurchase";
+const DELETE_ITEM_API = "product/cancelPurchaseItem";
+const ITEMOption_API = "product/Optionitems";
 
 /* ---------------- MAIN ---------------- */
 const AddEditPurchase = ({ editData, onCancel, onSaved }) => {
@@ -59,7 +59,7 @@ const AddEditPurchase = ({ editData, onCancel, onSaved }) => {
      ========================================================= */
   useEffect(() => {
     const fetchoptionlist = async () => {
-      const res = await axios.post(ITEMOption_API);
+      const res = await API.post(ITEMOption_API);
       if (res.data.status === 1) {
         setOptionitem( res.data.data)
       }
@@ -76,7 +76,7 @@ const AddEditPurchase = ({ editData, onCancel, onSaved }) => {
       try {
         setLoading(true);
 
-        const res = await axios.post(EDIT_API, {
+        const res = await API.post(EDIT_API, {
           purchase_id: editData.purchase_id,
         });
 
@@ -202,7 +202,7 @@ const AddEditPurchase = ({ editData, onCancel, onSaved }) => {
 
               /* -------- EDIT MODE (API + UI) -------- */
               try {
-                const res = await axios.post(DELETE_ITEM_API, {
+                const res = await API.post(DELETE_ITEM_API, {
                   purchase_id: editData.purchase_id,
                   item_id: row.item_id,
                 });
@@ -263,7 +263,7 @@ const AddEditPurchase = ({ editData, onCancel, onSaved }) => {
     };
 
     try {
-      const res = await axios.post(SAVE_API, payload);
+      const res = await API.post(SAVE_API, payload);
       if (res.data.status === 1) {
         toast.success(isEdit ? "Purchase updated" : "Purchase added");
         onSaved?.();

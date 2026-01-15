@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../api/api";
 
 const Stockreport = () => {
   const [search, setSearch] = useState("");
@@ -14,8 +14,8 @@ const Stockreport = () => {
     try {
       setLoading(true);
 
-      const res = await axios.post(
-        "https://api.sribalajistores.com/product/StockReport",
+      const res = await API.post(
+        "product/StockReport",
         {
           reporttyp: stockFilter,
         }

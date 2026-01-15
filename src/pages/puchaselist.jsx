@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../api/api";
 import toast from "react-hot-toast";
 import {
     Plus,
@@ -13,8 +13,8 @@ import Pagination from "../components/purchsepagenation";
 
 /* ---------------- CONSTANTS ---------------- */
 const LIMIT = 10;
-const LIST_API = "https://api.sribalajistores.com/product/purchaselist";
-const CANCEL_API = "https://api.sribalajistores.com/product/cancelPurchase";
+const LIST_API = "product/purchaselist";
+const CANCEL_API = "product/cancelPurchase";
 
 
 /* ---------------- MAIN COMPONENT ---------------- */
@@ -53,7 +53,7 @@ const PurchaseStockList = ({ onAdd, onEdit, onBack }) => {
                 offset,
             };
 
-            const res = await axios.post(LIST_API, payload);
+            const res = await API.post(LIST_API, payload);
 
 
             if (res.data.status === 1) {
@@ -122,7 +122,7 @@ const PurchaseStockList = ({ onAdd, onEdit, onBack }) => {
 
     const confirmCancel = async (purchaseid) => {
         try {
-            const res = await axios.post(CANCEL_API, { 'purchase_id': purchaseid });
+            const res = await API.post(CANCEL_API, { 'purchase_id': purchaseid });
 
             if (res.data.status === 1) {
                 setData((prev) =>

@@ -12,7 +12,7 @@ import {
   AlertTriangle,
   Download
 } from 'lucide-react';
-import axios from "axios";
+import API from '../api/api';
 import { useSearchParams } from "react-router-dom";
 
 // 1. Import Pagination
@@ -120,8 +120,8 @@ const BulkUpload = ({ onCancel }) => {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await axios.post(
-        "https://api.sribalajistores.com/product/createitmfile",
+      const res = await API.post(
+        "product/createitmfile",
         formData,
         {
           headers: {

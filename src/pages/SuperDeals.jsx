@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import API from "../api/api";
 import { Zap, Clock, Search, Trash2, Plus, ArrowRight, Tag, Percent, Calculator } from 'lucide-react'
 
-const API_URL = "product/superdealsdata";
+const API_URL = "product/Superdealdata";
 
 export default function SuperDeals() {
 

@@ -25,8 +25,8 @@ const Stockreport = () => {
 
       // Response structure: res.data = { status: 1, data: { data: [], status: 1, message: "" } }
       // We need to access res.data.data.data to get the actual array
-      if (res.data?.status === 1 && res.data?.data?.data && Array.isArray(res.data.data.data)) {
-        const dataArray = res.data.data.data;
+      if (res.data?.status === 1 && res.data?.data && Array.isArray(res.data.data)) {
+        const dataArray = res.data.data;
         setLowdata(dataArray);
         setFilteredData(dataArray);
         setTotalItems(dataArray.length);

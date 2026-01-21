@@ -25,6 +25,7 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
         image: null,
         discount_per: 0,
         discount_sts: 0,
+        itmtype: '',
     });
 
     const [categories, setCategories] = useState([]);
@@ -36,6 +37,7 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
     ];
 
     const discountoption = [{ "label": "OFF", "value": 0 }, { "label": "ON", "value": 1 }];
+    const itemtypes = [{ "label": "Sessional fruit", "value":"fruit" }, { "label": "Sessional Vegitable", "value": "vegitable" }];
 
     /* ================= PREFILL ================= */
     useEffect(() => {
@@ -58,6 +60,7 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
                 image: initialData.image ?? null,
                 discount_per: initialData.discount_per ?? 0,
                 discount_sts: initialData.discount_sts ?? 0,
+                itmtype: initialData.itmtype ?? '',
             });
         }
     }, [initialData]);
@@ -218,13 +221,13 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">Low Stock Qty</label>
-                            <input
-                                type="number"
-                                name="stockQty"
-                                value={product.stockQty}
-                                onChange={handleInputChange}
-                                className="border rounded-lg p-2.5"
+                            <label className="block text-sm font-medium mb-1">Item Type</label>
+                            <Select
+                                options={itemtypes}
+                                value={itemtypes.find((s) => s.value === product.itmtype) || null}
+                                onChange={(s) =>
+                                    setProduct({ ...product, itmtype: s ? s.value : null })
+                                }
                             />
                         </div>
                         <div>
@@ -314,6 +317,20 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
                                     setProduct({ ...product, discount_sts: s ? s.value : null })
                                 }
                             />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Low Stock Qty</label>
+                            <input
+                                type="number"
+                                name="stockQty"
+                                value={product.stockQty}
+                                onChange={handleInputChange}
+                                className="border rounded-lg p-2.5"
+                            />
+
                         </div>
                     </div>
                 </div>

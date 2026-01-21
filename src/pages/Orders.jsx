@@ -18,13 +18,21 @@ import {
 
 
 
+const parseLocalDateTime = (str) => {
+  // "2026-01-18 07:27:00"
+  const [date, time] = str.split(" ");
+  const [y, m, d] = date.split("-").map(Number);
+  const [hh, mm, ss] = time.split(":").map(Number);
+
+  // Month is 0-based in JS
+  return new Date(y, m - 1, d, hh, mm, ss);
+};
+
 const formatDeliverySlot = (startStr, endStr) => {
   if (!startStr) return "-";
 
-  const start = new Date(startStr);
-  if (isNaN(start.getTime())) return "-";
-
-  const end = endStr ? new Date(endStr) : null;
+  const start = new Date(startStr.replace(" ", "T"));
+  const end = endStr ? new Date(endStr.replace(" ", "T")) : null;
 
   const dateStr = start.toLocaleDateString("en-IN", {
     day: "2-digit",
@@ -32,21 +40,30 @@ const formatDeliverySlot = (startStr, endStr) => {
     year: "numeric",
   });
 
-  const formatTime = (d) =>
-    d.toLocaleTimeString("en-IN", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
+  const startTime = start.toLocaleTimeString("en-IN", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
 
-  // Immediate delivery
-  if (!end || isNaN(end.getTime())) {
-    return `${dateStr} • ${formatTime(start)} (Immediate)`;
+  // ✅ IMMEDIATE ORDER
+  if (!endStr) {
+    return `${dateStr} • ${startTime} (Immediate)`;
   }
 
-  // Slot delivery
-  return `${dateStr} • ${formatTime(start)} – ${formatTime(end)}`;
+  // ✅ SLOT ORDER
+  const endTime = end.toLocaleTimeString("en-IN", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  return `${dateStr} • ${startTime} – ${endTime}`;
 };
+
+
+
+
 
 export default function Orders() {
  
@@ -238,6 +255,9 @@ export default function Orders() {
     phone: apiData.customer.phone ||"-",
     address: apiData.address,
   },
+  paydetails: { 
+    pay_mode: apiData.paydetails.pay_mode,
+  },
   items: apiData.itmdetails.map((itm, idx) => ({
     id: idx + 1,
     name: itm.itmname,
@@ -373,7 +393,7 @@ export default function Orders() {
                     <div className="flex gap-3 text-slate-600 items-center pt-2 border-t border-slate-50 mt-2">
                         <CreditCard size={16} className="text-slate-400"/> 
                         <span className="font-medium">
-                            {orderDetails.id === '#ORD-7782' ? 'Online (UPI)' : 'Cash on Delivery'}
+                            {orderDetails.paydetails.pay_mode}
                         </span>
                     </div>
                 </div>

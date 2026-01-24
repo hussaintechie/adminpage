@@ -65,6 +65,7 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
                 {
                     mode_fetchorall: 0,
                     cate_id: 0,
+                    register_id: STORE_ID,
                 }
             );
 

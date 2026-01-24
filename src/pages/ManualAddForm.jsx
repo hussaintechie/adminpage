@@ -1,3 +1,4 @@
+const STORE_ID = Number(import.meta.env.VITE_STORE_ID);
 import { useEffect, useState } from "react";
 import { ImageIcon } from "lucide-react";
 import Select from "react-select";
@@ -71,7 +72,9 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
     const fetchCategories = async () => {
         const res = await API.post(
             "product/allcatedetails",
-            { mode_fetchorall: 0, cate_id: 0 }
+            { mode_fetchorall: 0, cate_id: 0,
+                register_id: STORE_ID,
+            }
         );
         if (res.data.status === 1) {
             setCategories(

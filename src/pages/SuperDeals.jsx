@@ -1,3 +1,4 @@
+const STORE_ID = Number(import.meta.env.VITE_STORE_ID);
 import React, { useState, useEffect } from 'react'
 import API from "../api/api";
 import { Zap, Clock, Search, Trash2, Plus, ArrowRight, Tag, Percent, Calculator } from 'lucide-react'
@@ -24,7 +25,7 @@ export default function SuperDeals() {
         try {
             setLoading(true);
 
-            const res = await API.post(API_URL);
+            const res = await API.post(API_URL,{ register_id: STORE_ID });
 
             if (res.data?.status === 1) {
 

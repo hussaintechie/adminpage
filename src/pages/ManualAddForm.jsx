@@ -6,6 +6,7 @@ import API from "../api/api";
 import toast from "react-hot-toast";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/material_green.css";
+import axios from "axios";
 
 const ManualAddForm = ({ onSave, onCancel, initialData }) => {
     const [product, setProduct] = useState({
@@ -38,7 +39,7 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
     ];
 
     const discountoption = [{ "label": "OFF", "value": 0 }, { "label": "ON", "value": 1 }];
-    const itemtypes = [{ "label": "Sessional fruit", "value":"fruit" }, { "label": "Sessional Vegitable", "value": "vegitable" }];
+    const itemtypes = [{ "label": "Sessional fruit", "value": "fruit" }, { "label": "Sessional Vegitable", "value": "vegitable" }];
 
     /* ================= PREFILL ================= */
     useEffect(() => {
@@ -75,7 +76,8 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
     const fetchCategories = async () => {
         const res = await API.post(
             "product/allcatedetails",
-            { mode_fetchorall: 0, cate_id: 0,
+            {
+                mode_fetchorall: 0, cate_id: 0,
                 register_id: STORE_ID,
             }
         );
@@ -116,14 +118,72 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setProduct({ ...product, image: URL.createObjectURL(file) });
+            setProduct((prev) => ({
+                ...prev,
+                image: file   // ✅ store actual File object
+            }));
         }
     };
 
+
     /* ================= SUBMIT ================= */
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault();
+
+    //     if (!product.name.trim()) {
+    //         toast.error("Product name is required");
+    //         return;
+    //     }
+    //     if (!product.category) {
+    //         toast.error("Category is required");
+    //         return;
+    //     }
+    //     if (!product.unit) {
+    //         toast.error("Unit is required");
+    //         return;
+    //     }
+    //     if (!product.basePrice) {
+    //         toast.error("Selling price is required");
+    //         return;
+    //     }
+    //     if (!product.mrp) {
+    //         toast.error("MRP is required");
+    //         return;
+    //     }
+
+    //     try {
+    //         const payload = {
+    //             productdata: {
+    //                 ...product,
+    //                 basePrice: Number(product.basePrice),
+    //                 mrp: Number(product.mrp),
+    //                 stockQty: Number(product.stockQty) || 0,
+    //                 openbalqty: Number(product.openbalqty) || 0,
+    //                },
+    //         };
+
+    //         const res = await API.post(
+    //             "product/saveItem",
+    //             payload
+    //         );
+
+    //         if (res.data.status === 1) {
+    //             toast.success(res.data.message || "Item saved successfully");
+    //             // onSave?.();
+    //             // onCancel?.();
+    //         } else {
+    //             toast.error(res.data.message || "Save failed");
+    //         }
+    //     } catch (err) {
+    //         console.error(err);
+    //         toast.error("Server error. Please try again");
+    //     }
+    // };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // ---------- VALIDATION ----------
         if (!product.name.trim()) {
             toast.error("Product name is required");
             return;
@@ -146,20 +206,51 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
         }
 
         try {
-            const payload = {
-                productdata: {
-                    ...product,
-                    basePrice: Number(product.basePrice),
-                    mrp: Number(product.mrp),
-                    stockQty: Number(product.stockQty) || 0,
-                    openbalqty: Number(product.openbalqty) || 0,
-                },
-            };
+            // ---------- FORM DATA ----------
+            const formData = new FormData();
 
+            formData.append("id", product.id || 0);
+            formData.append("name", product.name);
+            formData.append("brand", product.brand || "");
+            formData.append("description", product.description || "");
+            formData.append("category", product.category);
+            formData.append("unit", product.unit);
+            formData.append("basePrice", Number(product.basePrice));
+            formData.append("mrp", Number(product.mrp));
+            formData.append("stockQty", Number(product.stockQty) || 0);
+            formData.append("sku", product.sku || "");
+            formData.append("itmsts", product.itmsts ?? 1);
+            formData.append("openbalqty", Number(product.openbalqty) || 0);
+            formData.append("openbaldate", product.openbaldate || "");
+            formData.append("discount_sts", product.discount_sts ?? 0);
+            formData.append("discount_per", Number(product.discount_per) || 0);
+            formData.append("itmtype", product.itmtype || "");
+
+            // ---------- IMAGE ----------
+            if (product.image instanceof File) {
+                formData.append("image", product.image);
+            }
+
+            // ---------- API CALL ----------
+            // const res = await API.post(
+            //     "product/saveItem",
+            //     formData,
+            //     {
+            //         headers: {
+            //             "Content-Type": "multipart/form-data",
+            //         },
+            //     }
+            // );
             const res = await API.post(
-                "product/saveItem",
-                payload
+                "http://localhost:5000/product/saveItem",
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
             );
+
 
             if (res.data.status === 1) {
                 toast.success(res.data.message || "Item saved successfully");

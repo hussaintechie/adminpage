@@ -232,17 +232,8 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
             }
 
             // ---------- API CALL ----------
-            // const res = await API.post(
-            //     "product/saveItem",
-            //     formData,
-            //     {
-            //         headers: {
-            //             "Content-Type": "multipart/form-data",
-            //         },
-            //     }
-            // );
             const res = await API.post(
-                "http://localhost:5000/product/saveItem",
+                "product/saveItem",
                 formData,
                 {
                     headers: {
@@ -250,6 +241,15 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
                     },
                 }
             );
+            // const res = await API.post(
+            //     "http://localhost:5000/product/saveItem",
+            //     formData,
+            //     {
+            //         headers: {
+            //             "Content-Type": "multipart/form-data",
+            //         },
+            //     }
+            // );
 
 
             if (res.data.status === 1) {

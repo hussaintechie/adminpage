@@ -32,10 +32,11 @@ function App() {
 
       <Routes>
         {/* 🔓 PUBLIC LOGIN ROUTE (but redirect if already logged in) */}
-        <Route
-          path="/"
-          element={isAdminLoggedIn ? <Navigate to="/Dashboard" replace /> : <LoginForm />}
-        />
+       <Route
+  path="/"
+  element={isAdminLoggedIn ? <Navigate to="/Dashboard" replace /> : <LoginForm />}
+/>
+
 
         {/* 🔐 PROTECTED ADMIN ROUTES */}
         <Route element={<AdminProtectedRoute />}>

@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import Pagination from '../components/Pagination'; // 1. Import Pagination
 import { createDriverAPI, getDriversAPI, deleteDriverAPI } from "../api/driverApi";
-
+import toast, { Toaster } from "react-hot-toast";
 
 export default function Drivers() {
   const [view, setView] = useState('list'); // 'list' | 'add'
@@ -103,7 +103,7 @@ const fetchDrivers = async () => {
   e.preventDefault();
 
   if (!formData.name || !formData.mobile || !formData.aadhar) {
-    alert("Please fill all required fields");
+    toast.error("Please fill all required fields");
     return;
   }
 
@@ -129,11 +129,11 @@ const fetchDrivers = async () => {
       });
       fetchDrivers();
     } else {
-      alert(res.data.message);
+      toast.error(res.data.message);
     }
   } catch (err) {
     console.error(err);
-    alert("Failed to create driver");
+    toast.error("Failed to create driver");
   }
 };
 

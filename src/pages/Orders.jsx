@@ -15,7 +15,7 @@ import {
   ChevronRight, Package, User, X, Check, ChevronDown, FileText, Truck, Image as ImageIcon, CreditCard, RefreshCcw
 } from 'lucide-react'
 
-
+import toast, { Toaster } from "react-hot-toast";
 
 
 const parseLocalDateTime = (str) => {
@@ -119,14 +119,14 @@ export default function Orders() {
       };
     } catch (err) {
       console.error("Invoice print failed", err);
-      alert("Unable to print invoice");
+      toast.error("Unable to print invoice");
     }
   };
 
   const handleOutForDelivery = async (e, orderId, status) => {
     e.stopPropagation();
     if (status === "delivered") {
-      alert("This order has already been delivered.");
+      toast.error("This order has already been delivered.");
       return;
     }
     const confirmAction = window.confirm("Are you sure you want to mark this order as Out for Delivery?");
@@ -137,11 +137,11 @@ export default function Orders() {
       if (res.data.status === 1) {
         fetchorders(); 
       } else {
-        alert(res.data.message);
+        toast.error(res.data.message);
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to update order status");
+      toast.error("Failed to update order status");
     }
   };
 
@@ -272,7 +272,7 @@ export default function Orders() {
 
     } catch (err) {
       console.error("Single order fetch failed", err);
-      alert("Unable to load order details");
+      toast.error("Unable to load order details");
     } finally {
       setDetailsLoading(false);
     }

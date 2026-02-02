@@ -28,6 +28,8 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { MOCK_RECENT_ORDERS } from "../data/mockData";
+
+
 // --- INTERNAL MOCK DATA (To prevent white screen) ---
 
 // --- CUSTOM TOOLTIP COMPONENT ---

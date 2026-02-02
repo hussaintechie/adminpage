@@ -23,6 +23,8 @@ import {
 
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+
 
 // ================= SEASON CONFIG ==================
 const SEASON_CONFIG = {
@@ -89,7 +91,7 @@ export default function LoginForm() {
   // ================= SEND OTP =================
   const handleSendOtp = async () => {
     if (!/^[0-9]{10}$/.test(phone)) {
-      alert("Enter a valid 10-digit phone number");
+      Toaster.error("Enter a valid 10-digit phone number");
       return;
     }
 
@@ -98,9 +100,9 @@ export default function LoginForm() {
       await axios.post(API_URL, { phone, sendOtp: true });
 
       setOtpSent(true);
-      alert("OTP Sent!");
+      toast.success("OTP Sent!");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to send OTP");
+      toast.error(err.response?.data?.message || "Failed to send OTP");
     } finally {
       setLoading(false);
     }
@@ -108,7 +110,7 @@ export default function LoginForm() {
 
   // ================= VERIFY OTP =================
   const handleVerifyOtp = async () => {
-  if (!otp) return alert("Enter OTP");
+  if (!otp) return toast.error("Enter OTP");
 
   try {
     setLoading(true);
@@ -118,7 +120,7 @@ export default function LoginForm() {
       const user = res.data.user;
 
       if (user.role !== "admin") {
-        alert("Access denied. Admins only.");
+        toast.error("Access denied. Admins only.");
         return;
       }
 
@@ -128,7 +130,7 @@ export default function LoginForm() {
       navigate("/dashboard");
     }
   } catch (err) {
-    alert(err.response?.data?.message || "Invalid OTP");
+    toast.error(err.response?.data?.message || "Invalid OTP");
   } finally {
     setLoading(false);
   }

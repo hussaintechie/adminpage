@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./pages/Layout";
 import Dashboard from "./pages/Dashboard";
 import Orders from "./pages/Orders";
@@ -15,9 +15,13 @@ import useAdminSocket from "./hooks/useAdminSocket";
 function App() {
   useAdminSocket();
 
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  const isAdminLoggedIn = token && user && user.role === "admin";
+
   return (
     <BrowserRouter>
-      {/* ✅ GLOBAL TOASTER */}
       <Toaster
         position="top-right"
         toastOptions={{
@@ -27,8 +31,11 @@ function App() {
       />
 
       <Routes>
-        {/* 🔓 PUBLIC ROUTE */}
-        <Route path="/" element={<LoginForm />} />
+        {/* 🔓 PUBLIC LOGIN ROUTE (but redirect if already logged in) */}
+        <Route
+          path="/"
+          element={isAdminLoggedIn ? <Navigate to="/Dashboard" replace /> : <LoginForm />}
+        />
 
         {/* 🔐 PROTECTED ADMIN ROUTES */}
         <Route element={<AdminProtectedRoute />}>

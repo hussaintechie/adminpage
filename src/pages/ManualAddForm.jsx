@@ -32,6 +32,7 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
 
     const [categories, setCategories] = useState([]);
     const [unitlist, setUnitlist] = useState([]);
+    const [preview, setPreview] = useState(null);
 
     const itemsts = [
         { stsid: 1, label: "Active" },
@@ -64,6 +65,8 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
                 discount_sts: initialData.discount_sts ?? 0,
                 itmtype: initialData.itmtype ?? '',
             });
+            
+            setPreview(initialData.image ?? null);
         }
     }, [initialData]);
 
@@ -115,15 +118,93 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
         }));
     };
 
-    const handleImageUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setProduct((prev) => ({
-                ...prev,
-                image: file   // ✅ store actual File object
-            }));
-        }
+    // const handleImageUpload = (e) => {
+    //     const file = e.target.files[0];
+    //     if (file) {
+    //         setProduct((prev) => ({
+    //             ...prev,
+    //             image: file   // ✅ store actual File object
+    //         }));
+    //     }
+    // };
+
+   const MAX_SIZE_MB = 2;
+const MAX_WIDTH = 1024;
+const MAX_HEIGHT = 1024;
+
+// ✅ EXTENSION ONLY (not mime)
+const ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png"];
+
+const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const extension = file.name.split(".").pop().toLowerCase();
+
+    // ❌ Extension validation
+    if (!ALLOWED_EXTENSIONS.includes(extension)) {
+        alert("Only JPG, JPEG, PNG image files are allowed");
+        e.target.value = "";
+        return;
+    }
+
+    // ❌ Size validation (2 MB)
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+        alert("Image must be less than 2 MB");
+        e.target.value = "";
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+
+        img.onload = () => {
+            let { width, height } = img;
+
+            const scale = Math.min(
+                MAX_WIDTH / width,
+                MAX_HEIGHT / height,
+                1
+            );
+
+            width *= scale;
+            height *= scale;
+
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            canvas.toBlob(
+                (blob) => {
+                    if (!blob) return;
+
+                    const optimizedFile = new File([blob], file.name, {
+                        type: blob.type,
+                        lastModified: Date.now()
+                    });
+
+                    setProduct((prev) => ({
+                        ...prev,
+                        image: optimizedFile
+                    }));
+
+                    setPreview(URL.createObjectURL(optimizedFile));
+                },
+                "image/jpeg",
+                0.9
+            );
+        };
     };
+
+    reader.readAsDataURL(file);
+};
+
 
 
     /* ================= SUBMIT ================= */
@@ -441,18 +522,18 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
                             onChange={handleImageUpload}
                             className="absolute inset-0 opacity-0"
                         />
-                        {product.image ? (
+                        {preview ? (
                             <img
-                                src={product.image}
+                                src={preview}
+                                alt="Product"
                                 className="h-full w-full object-contain"
                             />
                         ) : (
-                            <div className="text-center">
-                                <ImageIcon className="mx-auto" />
+                            <div className="flex flex-col items-center justify-center h-full">
+                                <ImageIcon />
                                 <p className="text-xs">Tap to upload</p>
                             </div>
-                        )}
-                    </div>
+                        )}                    </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">MRP (₹) *</label>
                         <input

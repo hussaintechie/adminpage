@@ -40,7 +40,7 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
     ];
 
     const discountoption = [{ "label": "OFF", "value": 0 }, { "label": "ON", "value": 1 }];
-    const itemtypes = [{ "label": "Sessional fruit", "value": "fruit" }, { "label": "Sessional Vegitable", "value": "vegitable" }];
+    const itemtypes = [ { "label": "Select Item Type", "value": "" },{ "label": "Sessional fruit", "value": "fruit" }, { "label": "Sessional Vegitable", "value": "vegitable" }];
 
     /* ================= PREFILL ================= */
     useEffect(() => {

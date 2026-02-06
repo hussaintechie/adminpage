@@ -6,6 +6,8 @@ import { getCategoriesAPI, addCategoryAPI } from "../api/categoryAPI";
 const CategoryPage = () => {
 ;
 const [categories, setCategories] = useState([]);
+const [search, setSearch] = useState("");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCategory, setNewCategory] = useState({ name: '', image: null });
   const [editId, setEditId] = useState(null);
@@ -77,6 +79,11 @@ const fetchCategories = async () => {
 useEffect(() => {
   fetchCategories();
 }, []);
+const filteredCategories = categories.filter(cat =>
+  cat.categories_name
+    ?.toLowerCase()
+    .includes(search.toLowerCase())
+);
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-sans">
@@ -98,11 +105,14 @@ useEffect(() => {
       <div className="bg-white p-4 rounded-xl shadow-sm mb-6 flex justify-between items-center border border-gray-100">
         <div className="relative w-72">
           <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
-          <input 
-            type="text" 
-            placeholder="Search categories..." 
-            className="pl-10 pr-4 py-2 w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
-          />
+         <input 
+  type="text"
+  placeholder="Search categories..."
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  className="pl-10 pr-4 py-2 w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+/>
+
         </div>
         <p className="text-sm text-gray-500 font-medium">Total Categories: {categories.length}</p>
       </div>
@@ -119,7 +129,7 @@ useEffect(() => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50 text-sm text-gray-700">
-            {categories.map((cat, index) => (
+            {filteredCategories.map((cat, index) => (
               <tr key={cat.categories_id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4">{index + 1}</td>
                 <td className="px-6 py-4">

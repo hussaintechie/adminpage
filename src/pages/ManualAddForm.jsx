@@ -40,7 +40,7 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
     ];
 
     const discountoption = [{ "label": "OFF", "value": 0 }, { "label": "ON", "value": 1 }];
-    const itemtypes = [{ "label": "Sessional fruit", "value": "fruit" }, { "label": "Sessional Vegitable", "value": "vegitable" }];
+    const itemtypes = [ { "label": "Select Item Type", "value": "" },{ "label": "Sessional fruit", "value": "fruit" }, { "label": "Sessional Vegitable", "value": "vegitable" }];
 
     /* ================= PREFILL ================= */
     useEffect(() => {
@@ -133,7 +133,7 @@ const MAX_WIDTH = 1024;
 const MAX_HEIGHT = 1024;
 
 // ✅ EXTENSION ONLY (not mime)
-const ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png"];
+const ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png","webp"];
 
 const handleImageUpload = (e) => {
     const file = e.target.files?.[0];
@@ -143,7 +143,7 @@ const handleImageUpload = (e) => {
 
     // ❌ Extension validation
     if (!ALLOWED_EXTENSIONS.includes(extension)) {
-        alert("Only JPG, JPEG, PNG image files are allowed");
+        alert("Only JPG, JPEG, PNG, WEBP image files are allowed");
         e.target.value = "";
         return;
     }

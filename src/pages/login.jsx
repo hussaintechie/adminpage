@@ -213,7 +213,7 @@ export default function LoginForm() {
           />
 
           <Typography variant={isDesktop ? "h2" : "h3"} fontWeight={800}>
-            SB <br />
+            SBS<br />
             <span style={{ color: theme.primary }}>Grocery</span>
           </Typography>
 

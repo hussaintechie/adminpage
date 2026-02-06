@@ -10,7 +10,8 @@ import {
   Package,
   MoreVertical,
   AlertTriangle,
-  Download
+  Download,
+  Tag
 } from 'lucide-react';
 import API from '../api/api';
 import { useSearchParams } from "react-router-dom";
@@ -24,6 +25,7 @@ import LowStockView from '../pages/Lowstockdetails';
 import Stockreport from '../pages/Stockreport';
 import toast from "react-hot-toast";
 import * as XLSX from "xlsx";
+import CategoryPage from '../pages/CategoryPage';
 
 
 /* ===== REQUIRED EXCEL HEADERS (STRICT) ===== */
@@ -262,12 +264,13 @@ const Inventory = () => {
             <div className="w-full overflow-x-auto no-scrollbar">
               <div className="bg-white p-1.5 rounded-xl border border-gray-200 shadow-sm flex whitespace-nowrap min-w-max">
                 {[
-                  { id: 'list', label: 'Inventory List' },
+                  { id: 'list', label: 'Product List' },
                   { id: 'low_stock', label: 'Low Stock', icon: AlertTriangle },
+                  { id: 'category', label: 'Category', icon: Tag },
                   { id: 'manual', label: 'Add Product', icon: Plus },
                   { id: 'bulk', label: 'Bulk Upload', icon: FileSpreadsheet },
-                  { id: 'inv_list', label: 'Stock List', icon: FileSpreadsheet },
-                  { id: 'inv_manage', label: 'Inventory Manage', icon: FileSpreadsheet },
+                  { id: 'inv_list', label: 'Add Purchase', icon: FileSpreadsheet },
+                  { id: 'inv_manage', label: 'Product Report', icon: FileSpreadsheet },
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -296,6 +299,8 @@ const Inventory = () => {
         {activeTab === 'bulk' && <BulkUpload onCancel={() => setActiveTab('list')} />}
         {activeTab === "inv_list" && <PurchaseController onBack={() => setActiveTab("list")} />}
         {activeTab === "inv_manage" && <Stockreport onBack={() => setActiveTab("list")} />}
+        {activeTab === "category" && <CategoryPage />}
+
       </div>
     </div>
   );

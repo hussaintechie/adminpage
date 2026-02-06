@@ -98,17 +98,17 @@ const removeCoupon = async (coupon_id) => {
 };
 
 
-  const addBanner = () => {
-    if(!bannerForm.title) return alert("Add a title for reference")
-    setBannersList([...bannersList, { ...bannerForm, id: Date.now() }])
-    setBannerForm({ slot: 'Banner Slot 1', title: '', link: '' })
-  }
-  const removeBanner = (id) => setBannersList(bannersList.filter(item => item.id !== id))
+  // const addBanner = () => {
+  //   if(!bannerForm.title) return alert("Add a title for reference")
+  //   setBannersList([...bannersList, { ...bannerForm, id: Date.now() }])
+  //   setBannerForm({ slot: 'Banner Slot 1', title: '', link: '' })
+  // }
+  // const removeBanner = (id) => setBannersList(bannersList.filter(item => item.id !== id))
 
-  const handleSaveAll = () => {
-    console.log({ couponsList, bannersList })
-    alert("Marketing Settings Saved!")
-  }
+  // const handleSaveAll = () => {
+  //   console.log({ couponsList, bannersList })
+  //   alert("Marketing Settings Saved!")
+  // }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 p-4 md:p-6 animate-in fade-in duration-300">
@@ -237,8 +237,8 @@ const removeCoupon = async (coupon_id) => {
 
         </div>
 
-        {/* --- CARD 2: AD BANNERS --- */}
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 flex flex-col h-[550px]">
+       
+        {/* <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 flex flex-col h-[550px]">
           <div className="flex items-center gap-3 border-b border-slate-50 pb-4 mb-4">
              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
                 <ImageIcon size={20} />
@@ -306,7 +306,7 @@ const removeCoupon = async (coupon_id) => {
                 </div>
              ))}
           </div>
-        </div>
+        </div> */}
 
       </div>
     </div>

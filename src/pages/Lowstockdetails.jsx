@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import API from "../api/api";
 import { AlertTriangle, ImageIcon } from "lucide-react";
 import Pagination from "../components/purchsepagenation";
+import { useNavigate } from "react-router-dom";
+
 
 const ITEMS_PER_PAGE = 10;
 
@@ -60,9 +62,11 @@ const LowStockView = () => {
     setStockFilter(e.target.value);
     setCurrentPage(1);
   };
+const navigate = useNavigate();
 
   /* ================= UI ================= */
   return (
+    
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
       {/* ALERT */}
       <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex gap-4 items-start">
@@ -177,7 +181,10 @@ const LowStockView = () => {
                     </td>
 
                     <td className="px-6 py-4 text-right">
-                      <button className="bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-900 transition-colors shadow-md shadow-slate-200">
+                      <button 
+                      onClick={() => navigate("/inventory?tab=inv_list&openAdd=true")
+}
+                      className="bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-900 transition-colors shadow-md shadow-slate-200">
                         Restock
                       </button>
                     </td>

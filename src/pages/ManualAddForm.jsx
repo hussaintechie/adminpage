@@ -312,11 +312,15 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
       }
 
       // ---------- API CALL ----------
+  
+
       const res = await API.post("product/saveItem", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
+      console.log("API RESPONSE:", res.data);
+
       // const res = await API.post(
       //     "http://localhost:5000/product/saveItem",
       //     formData,
@@ -331,7 +335,7 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
         toast.success(res.data.message || "Item saved successfully");
         // navigate("/inventory?tab=list");
 
-        // onSave?.();
+         onSave?.();
          onCancel?.();
       } else {
         toast.error(res.data.message || "Save failed");
@@ -350,174 +354,133 @@ const ManualAddForm = ({ onSave, onCancel, initialData }) => {
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-gray-100">
         {/* LEFT */}
-        <div className="lg:col-span-2 p-4 md:p-6 space-y-6">
-          <div className="flex justify-between items-center">
-            <h3 className="font-bold text-gray-800 text-lg">Product Details</h3>
-            <span className="text-xs text-gray-400 uppercase font-semibold">
-              General
-            </span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Product Name *
-              </label>
-              <input
-                name="name"
-                value={product.name}
-                onChange={handleInputChange}
-                className="w-full border rounded-lg p-2.5"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Brand</label>
-              <input
-                name="brand"
-                value={product.brand}
-                onChange={handleInputChange}
-                className="w-full border rounded-lg p-2.5"
-              />
-            </div>
-          </div>
+    <div className="lg:col-span-2 p-4 md:p-6 space-y-5">
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">SKU</label>
-              <input
-                name="sku"
-                value={product.sku}
-                onChange={handleInputChange}
-                className="border rounded-lg p-2.5"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Item Type
-              </label>
-              <Select
-                options={itemtypes}
-                value={
-                  itemtypes.find((s) => s.value === product.itmtype) || null
-                }
-                onChange={(s) =>
-                  setProduct({ ...product, itmtype: s ? s.value : null })
-                }
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Category</label>
+  {/* PRODUCT NAME */}
+  <div>
+    <label className="block text-sm font-semibold mb-1">
+      Product Name *
+    </label>
+    <input
+      name="name"
+      value={product.name}
+      onChange={handleInputChange}
+      placeholder="Enter product name"
+      className="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500"
+    />
+  </div>
 
-              <Select
-                options={categories}
-                value={
-                  categories.find((c) => c.value === product.category) || null
-                }
-                onChange={(s) =>
-                  setProduct({ ...product, category: s ? s.value : "" })
-                }
-              />
-            </div>
-          </div>
+  {/* CATEGORY + ITEM TYPE */}
+  <div className="grid md:grid-cols-2 gap-4">
+    <div>
+      <label className="block text-sm font-medium mb-1">
+        Category
+      </label>
+      <Select
+        options={categories}
+        value={categories.find(c => c.value === product.category) || null}
+        onChange={s => setProduct({ ...product, category: s?.value || "" })}
+      />
+    </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Item Status
-              </label>
+    <div>
+      <label className="block text-sm font-medium mb-1">
+        Item Type
+      </label>
+      <Select
+        options={itemtypes}
+        value={itemtypes.find(s => s.value === product.itmtype) || null}
+        onChange={s => setProduct({ ...product, itmtype: s?.value || "" })}
+      />
+    </div>
+  </div>
 
-              <Select
-                options={itemsts}
-                getOptionValue={(o) => o.stsid}
-                getOptionLabel={(o) => o.label}
-                value={itemsts.find((s) => s.stsid === product.itmsts) || null}
-                onChange={(s) =>
-                  setProduct({ ...product, itmsts: s ? s.stsid : null })
-                }
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Item Unit
-              </label>
-              <Select
-                options={unitlist}
-                value={unitlist.find((u) => u.value === product.unit) || null}
-                onChange={(s) =>
-                  setProduct({ ...product, unit: s ? s.value : "" })
-                }
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Openbanlance Qty
-              </label>
-              <input
-                name="openbalqty"
-                value={product.openbalqty}
-                onChange={handleInputChange}
-                className="border rounded-lg p-2.5"
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Opening Balance Date
-              </label>
-              <Flatpickr
-                value={product.openbaldate}
-                options={{ dateFormat: "Y-m-d" }}
-                onChange={(dates, dateStr) =>
-                  setProduct({ ...product, openbaldate: dateStr })
-                }
-                className="border rounded-lg p-2.5 w-full"
-                placeholder="Opening Balance Date"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Discount Percent
-              </label>
+  {/* UNIT + STATUS */}
+  <div className="grid md:grid-cols-2 gap-4">
+    <div>
+      <label className="block text-sm font-medium mb-1">
+        Item Unit
+      </label>
+      <Select
+        options={unitlist}
+        value={unitlist.find(u => u.value === product.unit) || null}
+        onChange={s => setProduct({ ...product, unit: s?.value || "" })}
+      />
+    </div>
 
-              <input
-                name="discount_per"
-                value={product.discount_per}
-                onChange={handleInputChange}
-                className="border rounded-lg p-2.5"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Discount Status
-              </label>
-              <Select
-                options={discountoption}
-                value={
-                  discountoption.find(
-                    (s) => s.value === product.discount_sts,
-                  ) || null
-                }
-                onChange={(s) =>
-                  setProduct({ ...product, discount_sts: s ? s.value : null })
-                }
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Low Stock Qty
-              </label>
-              <input
-                type="number"
-                name="stockQty"
-                value={product.stockQty}
-                onChange={handleInputChange}
-                className="border rounded-lg p-2.5"
-              />
-            </div>
-          </div>
-        </div>
+    <div>
+      <label className="block text-sm font-medium mb-1">
+        Item Status
+      </label>
+      <Select
+        options={itemsts}
+        getOptionValue={o => o.stsid}
+        getOptionLabel={o => o.label}
+        value={itemsts.find(s => s.stsid === product.itmsts) || null}
+        onChange={s => setProduct({ ...product, itmsts: s?.stsid })}
+      />
+    </div>
+  </div>
+
+  {/* OPEN BALANCE */}
+  <div className="grid md:grid-cols-2 gap-4">
+    <div>
+      <label className="block text-sm font-medium mb-1">
+        Opening Balance Qty
+      </label>
+      <input
+        name="openbalqty"
+        value={product.openbalqty}
+        onChange={handleInputChange}
+        className="border rounded-lg p-2.5 w-full"
+      />
+    </div>
+
+    <div>
+      <label className="block text-sm font-medium mb-1">
+        Opening Balance Date
+      </label>
+      <Flatpickr
+        value={product.openbaldate}
+        options={{ dateFormat: "Y-m-d" }}
+        onChange={(d, str) =>
+          setProduct({ ...product, openbaldate: str })
+        }
+        className="border rounded-lg p-2.5 w-full"
+      />
+    </div>
+  </div>
+
+  {/* DISCOUNT + LOW STOCK */}
+  <div className="grid md:grid-cols-2 gap-4">
+    <div>
+      <label className="block text-sm font-medium mb-1">
+        Discount %
+      </label>
+      <input
+        name="discount_per"
+        value={product.discount_per}
+        onChange={handleInputChange}
+        className="border rounded-lg p-2.5 w-full"
+      />
+    </div>
+
+    <div>
+      <label className="block text-sm font-medium mb-1">
+        Low Stock Qty
+      </label>
+      <input
+        type="number"
+        name="stockQty"
+        value={product.stockQty}
+        onChange={handleInputChange}
+        className="border rounded-lg p-2.5 w-full"
+      />
+    </div>
+  </div>
+
+</div>
+
 
         {/* RIGHT */}
         <div className="lg:col-span-1 bg-gray-50/50 p-4 md:p-6 space-y-6">

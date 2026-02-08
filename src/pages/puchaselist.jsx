@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import API from "../api/api";
 import toast from "react-hot-toast";
+import { useLocation } from "react-router-dom";
+
 import {
     Plus,
     Pencil,
@@ -18,7 +20,14 @@ const CANCEL_API = "product/cancelPurchase";
 
 
 /* ---------------- MAIN COMPONENT ---------------- */
-const PurchaseStockList = ({ onAdd, onEdit, onBack }) => {
+const PurchaseStockList = ({ onAdd, onEdit, onBack,openAdd  }) => {
+    const location = useLocation();
+useEffect(() => {
+  if (openAdd === "true" && onAdd) {
+    onAdd();
+  }
+}, [openAdd]);
+
     const [data, setData] = useState([]);
     const [totalCount, setTotalCount] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);

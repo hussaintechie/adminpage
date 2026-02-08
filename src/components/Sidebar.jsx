@@ -19,7 +19,7 @@ const handleremove = () => {
     { icon: Users, label: 'Customers', path: '/customers' },
     { icon: Truck, label: 'Drivers', path: '/drivers' },
     {icon: Percent,label:'SuperDeals',path:'/SuperDeals'},
-    { icon: Settings, label: 'Settings', path: '/settings' },
+    { icon: Settings, label: 'Coupons', path: '/settings' },
   ]
 
   return (

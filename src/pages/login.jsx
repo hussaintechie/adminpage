@@ -245,11 +245,12 @@ export default function LoginForm() {
           </Box>
 
           {/* PHONE INPUT */}
-  <TextField
+  {!otpSent && (
+    <TextField
   fullWidth
   label="Phone Number"
   value={phone}
-  disabled={otpSent}
+  
   onChange={(e) => {
     const value = e.target.value.replace(/\D/g, "");
     if (value.length <= 10) {
@@ -265,7 +266,7 @@ export default function LoginForm() {
   }}
   sx={{ mb: 3 }}
 />
-
+  )}
           {/* OTP INPUT */}
           {otpSent && (
             <TextField

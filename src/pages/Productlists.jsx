@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../api/api";
 import { Search, ImageIcon, Trash2, Edit, Plus, PackageOpen } from "lucide-react";
-import Pagination from "../components/purchsepagenation";
+import Pagination from "../components/Pagination";
 import ManualAddForm from "../pages/ManualAddForm";
 
 const ITEMS_PER_PAGE = 15;
@@ -146,7 +146,7 @@ const handleSave = () => {
                 <td className="px-6 py-4 text-right">
                   <div className="flex justify-end gap-2">
                     <button onClick={() => handleEdit(item)} className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors"><Edit size={18} /></button>
-                    <button onClick={() => handleDelete(item.product_id)} className="p-2 hover:bg-red-50 text-red-600 rounded-lg transition-colors"><Trash2 size={18} /></button>
+                    {/* <button onClick={() => handleDelete(item.product_id)} className="p-2 hover:bg-red-50 text-red-600 rounded-lg transition-colors"><Trash2 size={18} /></button> */}
                   </div>
                 </td>
               </tr>
@@ -178,7 +178,7 @@ const handleSave = () => {
                <span className="text-xs font-medium px-2 py-1 bg-gray-100 rounded-md text-gray-600">{item.status}</span>
                <div className="flex gap-2">
                   <button onClick={() => handleEdit(item)} className="flex items-center gap-1 px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-md"><Edit size={14} /> Edit</button>
-                  <button onClick={() => handleDelete(item.id)} className="flex items-center gap-1 px-3 py-1.5 text-sm bg-red-50 text-red-600 rounded-md"><Trash2 size={14} /> Delete</button>
+                  {/* <button onClick={() => handleDelete(item.id)} className="flex items-center gap-1 px-3 py-1.5 text-sm bg-red-50 text-red-600 rounded-md"><Trash2 size={14} /> Delete</button> */}
                </div>
             </div>
           </div>

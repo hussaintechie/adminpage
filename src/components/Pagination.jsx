@@ -14,22 +14,25 @@ const Pagination = ({
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
+  // 🔥 Safe & Clean Pagination Logic
   const pages = useMemo(() => {
-    const range = [];
     const delta = 2;
+    const range = [];
 
-    const left = Math.max(2, currentPage - delta);
-    const right = Math.min(totalPages - 1, currentPage + delta);
+    const start = Math.max(1, currentPage - delta);
+    const end = Math.min(totalPages, currentPage + delta);
 
-    range.push(1);
-
-    if (left > 2) range.push("...");
-
-    for (let i = left; i <= right; i++) range.push(i);
-
-    if (right < totalPages - 1) range.push("...");
-
-    if (totalPages > 1) range.push(totalPages);
+    for (let i = 1; i <= totalPages; i++) {
+      if (
+        i === 1 ||
+        i === totalPages ||
+        (i >= start && i <= end)
+      ) {
+        range.push(i);
+      } else if (i === start - 1 || i === end + 1) {
+        range.push("...");
+      }
+    }
 
     return range;
   }, [currentPage, totalPages]);
@@ -40,69 +43,63 @@ const Pagination = ({
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-6 border-t bg-white">
-      
-      {/* MOBILE */}
-      <div className="flex justify-between w-full sm:hidden">
+  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-5 px-6 bg-white rounded-2xl shadow-sm border border-gray-100">
+    
+    {/* LEFT INFO */}
+    <p className="text-sm text-gray-600">
+      Showing{" "}
+      <span className="font-semibold text-gray-900">{startItem}</span> to{" "}
+      <span className="font-semibold text-gray-900">{endItem}</span> of{" "}
+      <span className="font-semibold text-gray-900">{totalItems}</span>
+    </p>
+
+    {/* PAGINATION CONTROLS */}
+    <div className="flex items-center gap-1 bg-gray-50 p-1.5 rounded-xl border border-gray-200 shadow-inner">
+
+      {/* Previous */}
+      <button
+        onClick={() => goToPage(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="w-9 h-9 flex items-center justify-center rounded-lg transition-all 
+        disabled:opacity-40 disabled:cursor-not-allowed
+        hover:bg-white hover:shadow-sm"
+      >
+        <ChevronLeft size={18} />
+      </button>
+
+      {/* Page Numbers */}
+      {pages.map((page, index) => (
         <button
-          onClick={() => goToPage(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="px-4 py-2 border rounded-md text-sm"
+          key={page === "..." ? `ellipsis-${index}` : `page-${page}`}
+          disabled={page === "..."}
+          onClick={() => goToPage(page)}
+          className={`min-w-[36px] h-9 px-3 text-sm font-medium rounded-lg transition-all duration-200
+            ${
+              page === currentPage
+                ? "bg-emerald-600 text-white shadow-md"
+                : page === "..."
+                ? "cursor-default text-gray-400"
+                : "text-gray-700 hover:bg-white hover:shadow-sm"
+            }
+          `}
         >
-          Previous
+          {page}
         </button>
-        <button
-          onClick={() => goToPage(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="px-4 py-2 border rounded-md text-sm"
-        >
-          Next
-        </button>
-      </div>
+      ))}
 
-      {/* DESKTOP */}
-      <div className="hidden sm:flex w-full items-center justify-between">
-        <p className="text-sm text-gray-700">
-          Showing <b>{startItem}</b> to <b>{endItem}</b> of <b>{totalItems}</b>
-        </p>
-
-        <div className="inline-flex rounded-md shadow-sm">
-          <button
-            onClick={() => goToPage(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-2 py-2 border rounded-l-md"
-          >
-            <ChevronLeft size={16} />
-          </button>
-
-          {pages.map((page, idx) => (
-            <button
-              key={idx}
-              disabled={page === "..."}
-              onClick={() => goToPage(page)}
-              className={`px-4 py-2 border text-sm ${
-                page === currentPage
-                  ? "bg-emerald-600 text-white"
-                  : page === "..."
-                  ? "cursor-default text-gray-400"
-                  : "hover:bg-gray-50"
-              }`}
-            >
-              {page}
-            </button>
-          ))}
-
-          <button
-            onClick={() => goToPage(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-2 py-2 border rounded-r-md"
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      </div>
+      {/* Next */}
+      <button
+        onClick={() => goToPage(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="w-9 h-9 flex items-center justify-center rounded-lg transition-all 
+        disabled:opacity-40 disabled:cursor-not-allowed
+        hover:bg-white hover:shadow-sm"
+      >
+        <ChevronRight size={18} />
+      </button>
     </div>
-  );
+  </div>
+);
 };
 
 export default Pagination;

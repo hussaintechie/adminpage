@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../api/api";
 import { AlertTriangle, ImageIcon } from "lucide-react";
-import Pagination from "../components/purchsepagenation";
+import Pagination from "../components/Pagination";
 import { useNavigate } from "react-router-dom";
 
 

@@ -11,7 +11,7 @@ import {
     Calendar,
     Package,
 } from "lucide-react";
-import Pagination from "../components/purchsepagenation";
+import Pagination from "../components/Pagination";
 
 /* ---------------- CONSTANTS ---------------- */
 const LIMIT = 10;

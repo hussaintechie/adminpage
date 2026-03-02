@@ -10,13 +10,15 @@ import {
   Package,
   MoreVertical,
   AlertTriangle,
-  Download
+  Download,
+  Tag
 } from 'lucide-react';
 import API from '../api/api';
 import { useSearchParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 // 1. Import Pagination
-import { EXISTING_PRODUCTS } from '../data/mockData';
+
 import PurchaseController from '../pages/Purchasecontroller';
 import Productlist from '../pages/Productlists';
 import ManualAddForm from '../pages/ManualAddForm';
@@ -24,6 +26,7 @@ import LowStockView from '../pages/Lowstockdetails';
 import Stockreport from '../pages/Stockreport';
 import toast from "react-hot-toast";
 import * as XLSX from "xlsx";
+import CategoryPage from '../pages/CategoryPage';
 
 
 /* ===== REQUIRED EXCEL HEADERS (STRICT) ===== */
@@ -43,7 +46,7 @@ const BulkUpload = ({ onCancel }) => {
   const [fileName, setFileName] = useState("");
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
-
+ 
   /* -------- DOWNLOAD TEMPLATE -------- */
   const downloadExactExcel = () => {
     window.location.href = "/templates/inventory_bulk_template.xlsx";
@@ -201,7 +204,11 @@ const BulkUpload = ({ onCancel }) => {
 
 // --- MAIN INVENTORY COMPONENT ---
 const Inventory = () => {
+  const location = useLocation();
+
   const [searchParams] = useSearchParams();
+  const openAdd = searchParams.get("openAdd");
+
   const tabFromUrl = searchParams.get("tab");
 
   const [activeTab, setActiveTab] = useState(tabFromUrl || "list");
@@ -211,15 +218,32 @@ const Inventory = () => {
       setActiveTab(tabFromUrl);
     }
   }, [tabFromUrl]);
-  const [inventory, setInventory] = useState(EXISTING_PRODUCTS);
+   const [inventory, setInventory] = useState([]);
+ const fetchProducts = async () => {
+  try {
+    const res = await API.get("product/Itemslist", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    setInventory(res.data.data || []);
+  } catch (err) {
+    console.error(err);
+  }
+};
+ 
+useEffect(() => {
+  fetchProducts();
+}, []);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
   const itemsPerPage = 8; // Number of items to show per page
 
-  const handleSaveProduct = (newProduct) => {
-    setInventory([{ ...newProduct, id: Date.now(), price: newProduct.basePrice, stock: newProduct.stockQty, status: 'Active' }, ...inventory]);
+  const handleSaveProduct = async  (newProduct) => {
+    await fetchProducts();
     setActiveTab('list');
   };
 
@@ -265,12 +289,13 @@ const Inventory = () => {
             <div className="w-full overflow-x-auto no-scrollbar">
               <div className="bg-white p-1.5 rounded-xl border border-gray-200 shadow-sm flex whitespace-nowrap min-w-max">
                 {[
-                  { id: 'list', label: 'Inventory List' },
+                  { id: 'list', label: 'Product List' },
                   { id: 'low_stock', label: 'Low Stock', icon: AlertTriangle },
+                  { id: 'category', label: 'Add Category', icon: Tag },
                   { id: 'manual', label: 'Add Product', icon: Plus },
                   { id: 'bulk', label: 'Bulk Upload', icon: FileSpreadsheet },
-                  { id: 'inv_list', label: 'Stock List', icon: FileSpreadsheet },
-                  { id: 'inv_manage', label: 'Inventory Manage', icon: FileSpreadsheet },
+                  { id: 'inv_list', label: 'Add Purchase', icon: FileSpreadsheet },
+                  { id: 'inv_manage', label: 'Product Report', icon: FileSpreadsheet },
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -290,15 +315,35 @@ const Inventory = () => {
 
         {/* --- VIEWS --- */}
         {activeTab === 'list' && (
-          <Productlist />
+          <Productlist inventory={inventory} />
         )}
 
         {/* Form Views */}
         {activeTab === 'low_stock' && <LowStockView />}
         {activeTab === 'manual' && <ManualAddForm onSave={handleSaveProduct} onCancel={() => setActiveTab('list')} />}
-        {activeTab === 'bulk' && <BulkUpload onCancel={() => setActiveTab('list')} />}
-        {activeTab === "inv_list" && <PurchaseController onBack={() => setActiveTab("list")} />}
+     {activeTab === "bulk" && (
+  <BulkUpload
+    onCancel={() => {
+      fetchProducts();
+      setActiveTab("list");
+    }}
+  />
+)}
+
+
+       
+        {activeTab === "inv_list" && (
+ <PurchaseController
+  onBack={() => setActiveTab("list")}
+  openAdd={openAdd}
+/>
+
+)}
+
+
         {activeTab === "inv_manage" && <Stockreport onBack={() => setActiveTab("list")} />}
+        {activeTab === "category" && <CategoryPage />}
+
       </div>
     </div>
   );

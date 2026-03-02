@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../api/api";
 import { Search, ImageIcon, Trash2, Edit, Plus, PackageOpen } from "lucide-react";
-import Pagination from "../components/purchsepagenation";
+import Pagination from "../components/Pagination";
 import ManualAddForm from "../pages/ManualAddForm";
 
 const ITEMS_PER_PAGE = 15;
@@ -47,8 +47,8 @@ export default function Inventory() {
     try {
       await API.post(`${API_URL}/deleteItem`, { id });
       fetchItems();
-    } catch {
-      alert("Delete failed");
+    } catch (err) {
+      toast.error("Delete failed");
     }
   };
 
@@ -57,20 +57,27 @@ export default function Inventory() {
     setShowForm(true);
   };
 
-  const handleSave = async (product) => {
-    try {
-      if (product.id) {
-        await API.put(`${API_URL}/updateItem/${product.id}`, product);
-      } else {
-        await API.post(`${API_URL}/addItem`, product);
-      }
-      setShowForm(false);
-      setEditItem(null);
-      fetchItems();
-    } catch (err) {
-      alert("Save failed");
-    }
-  };
+//  const handleSave = async (product) => {
+//   try {
+//     if (product.id) {
+//       await API.put(`${API_URL}/updateItem/${product.id}`, product);
+//     } else {
+//       await API.post(`${API_URL}/addItem`, product);
+//     }
+//     setShowForm(false);
+//     setEditItem(null);
+//     fetchItems();
+//   } catch {
+//     alert("Save failed");
+//   }
+// };
+const handleSave = () => {
+  setShowForm(false);
+  setEditItem(null);
+  fetchItems();
+};
+
+
 
   if (showForm) {
     return <ManualAddForm initialData={editItem} onSave={handleSave} onCancel={() => setShowForm(false)} />;
@@ -117,7 +124,7 @@ export default function Inventory() {
             {loading ? (
               <tr><td colSpan="5" className="text-center py-20 text-gray-400">Loading inventory...</td></tr>
             ) : items.map((item) => (
-              <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
+              <tr key={item.product_id} className="hover:bg-gray-50/50 transition-colors">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden border">
@@ -139,7 +146,7 @@ export default function Inventory() {
                 <td className="px-6 py-4 text-right">
                   <div className="flex justify-end gap-2">
                     <button onClick={() => handleEdit(item)} className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors"><Edit size={18} /></button>
-                    <button onClick={() => handleDelete(item.id)} className="p-2 hover:bg-red-50 text-red-600 rounded-lg transition-colors"><Trash2 size={18} /></button>
+                    {/* <button onClick={() => handleDelete(item.product_id)} className="p-2 hover:bg-red-50 text-red-600 rounded-lg transition-colors"><Trash2 size={18} /></button> */}
                   </div>
                 </td>
               </tr>
@@ -153,7 +160,7 @@ export default function Inventory() {
         {loading ? (
            <div className="text-center py-10">Loading...</div>
         ) : items.map((item) => (
-          <div key={item.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-4">
+          <div key={item.product_id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-4">
             <div className="flex gap-4">
               <div className="w-16 h-16 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center border">
                 {item.image ? <img src={item.image} className="w-full h-full object-cover rounded-lg" /> : <ImageIcon className="text-gray-400" size={24} />}
@@ -171,7 +178,7 @@ export default function Inventory() {
                <span className="text-xs font-medium px-2 py-1 bg-gray-100 rounded-md text-gray-600">{item.status}</span>
                <div className="flex gap-2">
                   <button onClick={() => handleEdit(item)} className="flex items-center gap-1 px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-md"><Edit size={14} /> Edit</button>
-                  <button onClick={() => handleDelete(item.id)} className="flex items-center gap-1 px-3 py-1.5 text-sm bg-red-50 text-red-600 rounded-md"><Trash2 size={14} /> Delete</button>
+                  {/* <button onClick={() => handleDelete(item.id)} className="flex items-center gap-1 px-3 py-1.5 text-sm bg-red-50 text-red-600 rounded-md"><Trash2 size={14} /> Delete</button> */}
                </div>
             </div>
           </div>

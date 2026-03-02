@@ -125,8 +125,8 @@ const Stockreport = () => {
                 <tr>
                   <th className="px-6 py-4">SNo</th>
                   <th className="px-6 py-4">Item Name</th>
-                  <th className="px-6 py-4">Unit</th>
-                  <th className="px-6 py-4">Openbal Qty</th>
+                  {/* <th className="px-6 py-4">Unit</th> */}
+                  {/* <th className="px-6 py-4">Openbal Qty</th> */}
                   <th className="px-6 py-4">In Qty</th>
                   <th className="px-6 py-4 text-right">Out Qty</th>
                   <th className="px-6 py-4 text-right">Available Qty</th>
@@ -143,8 +143,8 @@ const Stockreport = () => {
                     <td className="px-6 py-4 font-medium text-slate-800 text-left">
                       {item.title}
                     </td>
-                    <td className="px-6 py-4 text-left">{item.unitname}</td>
-                    <td className="px-6 py-4 text-center">{item.openbalqty}</td>
+                    {/* <td className="px-6 py-4 text-left">{item.unitname}</td>
+                    <td className="px-6 py-4 text-center">{item.openbalqty}</td> */}
                     <td className="px-6 py-4 text-center">{item.in_qty}</td>
                     <td className="px-6 py-4 text-center">{item.out_qty}</td>
                     <td className="px-6 py-4 text-center font-semibold">

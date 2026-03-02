@@ -245,14 +245,28 @@ export default function LoginForm() {
           </Box>
 
           {/* PHONE INPUT */}
-          <TextField
-            fullWidth
-            label="Phone Number"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            sx={{ mb: 3 }}
-          />
-
+  {!otpSent && (
+    <TextField
+  fullWidth
+  label="Phone Number"
+  value={phone}
+  
+  onChange={(e) => {
+    const value = e.target.value.replace(/\D/g, "");
+    if (value.length <= 10) {
+      setPhone(value);
+    }
+  }}
+  slotProps={{
+    input: {
+      maxLength: 10,
+      inputMode: "numeric",
+      pattern: "[0-9]*",
+    },
+  }}
+  sx={{ mb: 3 }}
+/>
+  )}
           {/* OTP INPUT */}
           {otpSent && (
             <TextField

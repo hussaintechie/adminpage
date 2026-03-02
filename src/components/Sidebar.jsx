@@ -19,7 +19,7 @@ const handleremove = () => {
     { icon: Users, label: 'Customers', path: '/customers' },
     { icon: Truck, label: 'Drivers', path: '/drivers' },
     {icon: Percent,label:'SuperDeals',path:'/SuperDeals'},
-    { icon: Settings, label: 'Settings', path: '/settings' },
+    { icon: Settings, label: 'Coupons', path: '/settings' },
   ]
 
   return (
@@ -67,7 +67,7 @@ const handleremove = () => {
         <div className="hidden md:flex h-16 items-center justify-center border-b border-slate-100">
           <div className="flex items-center space-x-2 text-emerald-600">
             <ShoppingBasket size={28} strokeWidth={2.5} />
-            <span className="text-xl font-bold tracking-tight">SB  <span className="text-slate-700">Grocers</span></span>
+            <span className="text-xl font-bold tracking-tight">SBS <span className="text-slate-700">Grocers</span></span>
           </div>
         </div>
 

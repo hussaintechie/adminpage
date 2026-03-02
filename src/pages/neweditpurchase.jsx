@@ -303,12 +303,12 @@ const AddEditPurchase = ({ editData, onCancel, onSaved }) => {
             />
           </Field>
 
-          <Field label="Purchase No">
+          {/* <Field label="Purchase No">
             <input value={purchaseNo} disabled className="input bg-gray-100" />
-          </Field>
+          </Field> */}
 
           <Field label="Reference">
-            <input value={reference} onChange={e => setReference(e.target.value)} className="input" />
+            <input value={reference} onChange={e => setReference(e.target.value)} className="input border border-gray-300 rounded-md px-3 py-2" />
           </Field>
         </div>
       </div>
@@ -353,7 +353,7 @@ const AddEditPurchase = ({ editData, onCancel, onSaved }) => {
                     value={row.quantity}
                     onChange={e => handleQtyChange(i, e.target.value)}
                     onKeyDown={e => handleQtyKeyDown(e, i)}
-                    className="input text-right"
+                    className="input text-right border border-gray-300 rounded-md px-3 py-1" 
                   />
                 </td>
                 <td className="text-right font-semibold">₹ {row.value}</td>

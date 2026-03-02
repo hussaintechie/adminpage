@@ -40,12 +40,12 @@ const AddEditPurchase = ({ editData, onCancel, onSaved }) => {
   });
 
   const ITEM_OPTIONS = ITEMS.map(i => ({
-  value: i.item_id,
-  label: i.item_name,
-  unit_id: i.unit_id,
-  unit_name: i.unit_name,
-  rate: i.rate,
-}));
+    value: i.item_id,
+    label: i.item_name,
+    unit_id: i.unit_id,
+    unit_name: i.unit_name,
+    rate: i.rate,
+  }));
 
   const [items, setItems] = useState([createRow()]);
   const [loading, setLoading] = useState(false);
@@ -61,7 +61,7 @@ const AddEditPurchase = ({ editData, onCancel, onSaved }) => {
     const fetchoptionlist = async () => {
       const res = await API.post(ITEMOption_API);
       if (res.data.status === 1) {
-        setOptionitem( res.data.data)
+        setOptionitem(res.data.data)
       }
     };
 
@@ -175,6 +175,8 @@ const AddEditPurchase = ({ editData, onCancel, onSaved }) => {
   const removeRow = (index) => {
     const row = items[index];
 
+    //    console.log();
+
     toast((t) => (
       <div className="flex flex-col gap-3">
         <span className="font-semibold">
@@ -195,6 +197,11 @@ const AddEditPurchase = ({ editData, onCancel, onSaved }) => {
 
               /* -------- ADD MODE (UI ONLY) -------- */
               if (!isEdit) {
+                setItems((prev) => prev.filter((_, i) => i !== index));
+                toast.success("Item removed");
+                return;
+              }
+              if (isEdit && !row.item_id) {
                 setItems((prev) => prev.filter((_, i) => i !== index));
                 toast.success("Item removed");
                 return;

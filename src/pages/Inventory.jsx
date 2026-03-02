@@ -79,8 +79,11 @@ const BulkUpload = ({ onCancel }) => {
         h.toString().trim()
       );
 
+      console.log(uploadedHeaders.length ,"uploadedHeaderslen");
+      console.log(REQUIRED_HEADERS.length ,"REQUIRED_HEADERSlen");
+
       /* Header count check */
-      if (uploadedHeaders.length !== REQUIRED_HEADERS.length) {
+      if (uploadedHeaders.length != REQUIRED_HEADERS.length) {
         toast.error("Invalid Excel format. Use only the downloaded template.");
         return;
       }
